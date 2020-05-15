@@ -48,21 +48,23 @@ export default Vue.extend({
     }
   },
   methods: {
-    enter() {
-      console.log('enter')
+    async enter(ev) {
+      const boardSnap = await db
+        .collection('boards')
+        .where('board_id', '==', this.enterId)
+        .get()
+      if (!boardSnap.empty) {
+        boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
+      }
     },
     async create() {
-      const query = db.collection('boards').doc(this.newId)
-      const item = await query.get()
-      if (item.exists) {
-        this.alreadyExists = true
-        return
-      }
-      await query.set({
+      const addedRef = await db.collection('boards').add({
         created_at: new Date(),
         is_active: true,
+        board_id: this.newId,
         owner: this.$store.getters.uid
       })
+      this.$router.push(`/boards/${addedRef.id}`)
     }
   }
 })

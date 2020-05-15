@@ -14,7 +14,8 @@ export const state = () => ({
 
 export const getters = {
   isLoggedIn: (state: IState) => state.status === 'loggedIn',
-  uid: (state: IState) => state.uid
+  uid: (state: IState) => state.uid,
+  username: (state: IState) => state.username
 }
 
 export const actions = {

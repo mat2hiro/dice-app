@@ -8,9 +8,12 @@
         <label class="close-input" for="nav-input"></label>
       </div>
       <div class="nav-main"></div>
-      <div class="nav-footer">
-        <button @click="leave">Leave the board</button>
-        <button @click="signout">Sign out</button>
+      <div class="nav-footer container">
+        <div class="row">
+          <div class="col-12">
+            <button class="btn btn-secondary" @click="signout">Sign out</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
