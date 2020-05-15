@@ -1,16 +1,30 @@
 <template>
   <div>
     <header>
-      <h1>mnpl app</h1>
+      <h1><nuxt-link to="/">Dice App</nuxt-link></h1>
     </header>
-    <main>
-      <p>sign-in.</p>
-      <nuxt />
+    <main class="d-flex justify-content-center">
+      <div class="container">
+        <nuxt />
+      </div>
     </main>
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
+header {
+  height: 60px;
+  border-bottom: 2px solid #ccc;
+  h1 {
+    height: 100%;
+    text-align: center;
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+  }
+}
+
 html {
   font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;

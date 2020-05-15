@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h1><nuxt-link to="/">mnpl app</nuxt-link></h1>
+    <h1><nuxt-link to="/">Dice App</nuxt-link></h1>
     <HamburgerNav />
   </header>
 </template>

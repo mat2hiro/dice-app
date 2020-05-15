@@ -7,13 +7,10 @@
       <div class="nav-header">
         <label class="close-input" for="nav-input"></label>
       </div>
-      <div class="nav-main"></div>
+      <div class="nav-main container"></div>
       <div class="nav-footer container">
-        <div class="row">
-          <div class="col-12">
-            <button class="btn btn-secondary" @click="signout">Sign out</button>
-          </div>
-        </div>
+        <button class="btn btn-secondary" @click="signout">Sign out</button>
+        <nuxt-link to="/terms/privacy">Privacy Policy</nuxt-link>
       </div>
     </div>
   </div>
@@ -126,6 +123,17 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.nav-main {
+  margin-bottom: 1em;
+}
+
+.nav-footer {
+  button {
+    margin-bottom: 1em;
+    display: block;
+  }
 }
 
 /*チェックが入ったらもろもろ表示*/

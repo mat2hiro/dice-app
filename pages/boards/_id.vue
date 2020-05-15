@@ -6,9 +6,9 @@
         <div class="col-6">
           <p class="dice">
             {{ diceUserName }}:
-            <span class="border" :class="{ 'text-danger': isDoubled }"
-              >{{ diceValues[0] }}, {{ diceValues[1] }}</span
-            >
+            <span class="border" :class="{ 'text-danger': isDoubled }">{{
+              diceValues.join(', ')
+            }}</span>
           </p>
         </div>
         <div class="col-6">
@@ -43,7 +43,7 @@
         </div>
       </div>
     </div>
-    <div v-if="isOwner" class="form-group">
+    <div class="form-group">
       <div class="row">
         <div class="col-4 d-flex align-items-top">
           <label>The Order</label>
@@ -51,11 +51,14 @@
         <div class="col-8">
           <div v-for="user in users" :key="user.uid" class="row">
             <div class="col-6 d-flex align-items-center">
-              <label>{{ user.username }}</label>
+              <label :class="{ 'text-primary': user.uid === throwUser.uid }">{{
+                user.username
+              }}</label>
             </div>
             <div class="col-6">
               <input
                 type="number"
+                :disabled="!isOwner"
                 :value="user.order"
                 class="form-control"
                 @input="(ev) => setUserOrder(ev, user)"
@@ -68,6 +71,26 @@
     <nuxt-link to="/"
       ><div class="btn btn-secondary">Leave the board</div></nuxt-link
     >
+    <div class="history-container">
+      <p>History of dice roll</p>
+      <div class="history-bordered">
+        <div
+          v-for="hist in history"
+          :key="hist.time.getTime()"
+          class="row history-row"
+        >
+          <div class="col-12 history-item">
+            {{
+              hist.time
+                ? `${hist.time.getHours()}:${hist.time.getMinutes()}:${hist.time.getSeconds()}`
+                : ''
+            }}
+            | {{ hist.user.username }} ::
+            <span>{{ hist.value.join(', ') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -119,7 +142,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState('board', ['dice', 'throwUser', 'users', 'owner']),
+    ...mapState('board', ['dice', 'throwUser', 'users', 'owner', 'history']),
     ...mapState('auth', ['uid']),
     isOwner() {
       return this.uid === this.owner
@@ -155,11 +178,10 @@ export default Vue.extend({
     await Promise.all(leftCB)
   },
   methods: {
-    ...mapGetters('board', ['board', 'users']),
     getNextUser(isDouble: boolean) {
       const me = this.users.find((u: any) => u.uid === this.uid)
       const meOrder = me.order === this.users.length ? 0 : me.order
-      return (isDouble && this.throwUser.double < 3) || this.users.length <= 1
+      return isDouble || this.users.length <= 1
         ? me
         : this.users.reduce(
             (pre: any, u: any) => {
@@ -170,8 +192,8 @@ export default Vue.extend({
     },
     async throwDice() {
       const diceRoll = [
-        Math.floor(Math.random() * 5) + 1,
-        Math.floor(Math.random() * 5) + 1
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1
       ]
       const isDouble = diceRoll[0] === diceRoll[1]
       const next = this.getNextUser(isDouble)
@@ -184,10 +206,7 @@ export default Vue.extend({
           throwUser: {
             uid: next.uid,
             username: next.username,
-            double:
-              isDouble && this.throwUser.double < 3
-                ? this.throwUser.double + 1
-                : 0
+            double: isDouble ? this.throwUser.double + 1 : 0
           }
         })
       ])
@@ -233,5 +252,21 @@ h2 {
 }
 .diceButtons button {
   margin-left: 1em;
+}
+.history-container {
+  margin-top: 2em;
+  .history-bordered {
+    padding: 0.5em 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow-y: auto;
+    max-height: 500px;
+  }
+  .history-row {
+    width: 100%;
+    padding: 0.5em 0;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+  }
 }
 </style>

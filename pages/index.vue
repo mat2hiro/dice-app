@@ -34,6 +34,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapState } from 'vuex'
 import firebase from '~/plugins/firebase'
 
 const db = firebase.firestore()
@@ -46,6 +47,9 @@ export default Vue.extend({
       newId: '',
       alreadyExists: false
     }
+  },
+  computed: {
+    ...mapState('auth', ['uid'])
   },
   methods: {
     async enter(ev) {
@@ -62,7 +66,7 @@ export default Vue.extend({
         created_at: new Date(),
         is_active: true,
         board_id: this.newId,
-        owner: this.$store.getters.uid
+        owner: this.uid
       })
       this.$router.push(`/boards/${addedRef.id}`)
     }

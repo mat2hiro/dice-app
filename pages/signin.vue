@@ -1,6 +1,10 @@
 <template>
   <div>
+    <p class="text-center">sign-in.</p>
     <FirebaseAuth />
+    <p class="text-center">
+      <nuxt-link to="/terms/privacy">Privacy Policy</nuxt-link>
+    </p>
   </div>
 </template>
 

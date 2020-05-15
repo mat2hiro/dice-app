@@ -8,7 +8,8 @@ export const state = () => ({
   users: [] as any[],
   dice: { value: [0, 0], user: { uid: '', username: '' } },
   throwUser: { uid: '', username: '', double: 0 },
-  unsubscribe: [] as any[]
+  unsubscribe: [] as any[],
+  history: [] as any[]
 })
 
 export type BoardModuleState = ReturnType<typeof state>
@@ -23,6 +24,7 @@ export const mutations: MutationTree<BoardModuleState> = {
     state.users = []
     state.dice = { value: [0, 0], user: { uid: '', username: '' } }
     state.throwUser = { uid: '', username: '', double: 0 }
+    state.history = []
   },
   set(state, setState) {
     state.owner = setState.owner || state.owner
@@ -48,6 +50,10 @@ export const mutations: MutationTree<BoardModuleState> = {
     if (index >= 0) {
       state.users.splice(index, 1)
     }
+  },
+  pushHistory(state, dice) {
+    dice.time = new Date()
+    state.history.unshift(dice)
   }
 }
 
@@ -72,6 +78,9 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
         dice: data && data.dice,
         throwUser: data && data.throwUser
       })
+      if (data && data.dice) {
+        commit('pushHistory', data.dice)
+      }
     })
     const unsubscribeUser = boardsRef
       .doc(nowId)
