@@ -6,7 +6,7 @@
       :dice-value="dice.value"
       :double="throwUser.double"
       :card="card"
-      :is-yourtime="isYourTime"
+      :is-your-time="isYourTime"
     />
     <user-status
       :joined-users="joinedUsers"
