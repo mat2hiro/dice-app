@@ -46,6 +46,22 @@ export default {
     '@nuxtjs/axios'
   ],
   /*
+   ** Bootstrap Vue configuration
+   */
+  bootstrapVue: {
+    componentPlugins: [
+      // 'ButtonPlugin',
+      // 'LayoutPlugin',
+      // 'FormPlugin',
+      // 'FormCheckboxPlugin',
+      // 'FormInputPlugin',
+      // 'FormRadioPlugin',
+      'ToastPlugin',
+      'ModalPlugin'
+    ],
+    directivePlugins: ['VBPopoverPlugin', 'VBTooltipPlugin', 'VBScrollspyPlugin']
+  },
+  /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options
    */
