@@ -64,7 +64,9 @@ export default Vue.extend({
     async create() {
       if (!this.newId) return
       const addedRef = await db.collection('boards').add({
-        created_at: new Date(),
+        timestamp: {
+          created: new Date()
+        },
         is_active: true,
         board_id: this.newId,
         owner: this.uid

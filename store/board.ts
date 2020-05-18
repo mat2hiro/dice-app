@@ -50,14 +50,21 @@ export const mutations: MutationTree<BoardModuleState> = {
     state.card = setState.card || state.card
     state.throwUser = setState.throwUser || state.throwUser
   },
-  setU(state, payload) {
-    Vue.set(state.users, payload.uid, payload.user)
+  setU(state, { uid, user }) {
+    const timestamp = user.timestamp || {}
+    if (timestamp.joined) timestamp.joined = timestamp.joined.toDate()
+    if (timestamp.left) timestamp.left = timestamp.left.toDate()
+    if (timestamp.updated) timestamp.updated = timestamp.updated.toDate()
+    user.timestamp = timestamp
+    Vue.set(state.users, uid, user)
   },
   removeU(state, uid) {
     Vue.delete(state.users, uid)
   },
   setM(state, message) {
-    message.time = message.time.toDate()
+    const timestamp = message.timestamp || {}
+    if (timestamp.created) timestamp.created = timestamp.created.toDate()
+    message.timestamp = timestamp
     state.messages.unshift(message)
   },
   pushHistory(state, dice) {
@@ -69,8 +76,19 @@ export const mutations: MutationTree<BoardModuleState> = {
 
 export const getters: GetterTree<BoardModuleState, BoardModuleState> = {
   joinedUsers: ({ users }) => {
+    const now = new Date().getTime()
     return Object.keys(users).reduce((pre, uid) => {
-      if (users[uid].is_joined) pre[uid] = users[uid]
+      const timestamp = users[uid].timestamp
+      const joinedAt = timestamp.joined
+      const leftAt = timestamp.left
+      const updatedAt = timestamp.updated || joinedAt
+      if (
+        joinedAt && // joined?
+        (!leftAt || joinedAt > leftAt) && // not left?
+        now - updatedAt < 2 * 60 * 60 * 1000 // not outdated?
+      ) {
+        pre[uid] = users[uid]
+      }
       return pre
     }, {})
   },
@@ -109,39 +127,55 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
       )
     const isDouble = diceRoll.every((val) => val === diceRoll[0])
     const nextuid = isDouble ? uid : getters.nextUserId(uid)
-    await boardsRef.doc(state.id).update({
-      dice: {
-        value: diceRoll,
-        uid,
-        time: new Date()
-      },
-      throwUser: {
-        uid: nextuid,
-        double: isDouble ? state.throwUser.double + 1 : 0
-      }
-    })
+    await Promise.all([
+      boardsRef.doc(state.id).update({
+        dice: {
+          value: diceRoll,
+          uid,
+          time: new Date()
+        },
+        throwUser: {
+          uid: nextuid,
+          double: isDouble ? state.throwUser.double + 1 : 0
+        }
+      }),
+      boardsRef
+        .doc(state.id)
+        .collection('users')
+        .doc(uid)
+        .update({ 'timestamp.updated': new Date() })
+    ])
   },
   skip: async ({ state, getters }, uid) => {
     const nextuid = getters.nextUserId(uid)
-    await boardsRef.doc(state.id).update({
-      throwUser: {
-        uid: nextuid,
-        double: 0
-      }
-    })
+    await Promise.all([
+      boardsRef.doc(state.id).update({
+        throwUser: {
+          uid: nextuid,
+          double: 0
+        }
+      }),
+      boardsRef
+        .doc(state.id)
+        .collection('users')
+        .doc(uid)
+        .update({ 'timestamp.updated': new Date() })
+    ])
   },
   drawCard: async ({ state }, minMax) => {
     const value = (
       Math.random() * (+minMax[1] - +minMax[0]) +
       +minMax[0]
     ).toFixed(2)
-    await boardsRef.doc(state.id).update({
-      card: {
-        from: +minMax[0],
-        to: +minMax[1],
-        value
-      }
-    })
+    await Promise.all([
+      boardsRef.doc(state.id).update({
+        card: {
+          from: +minMax[0],
+          to: +minMax[1],
+          value
+        }
+      })
+    ])
   },
   sendMessage: async ({ state }, message) => {
     const messagePromises: Promise<any>[] = [
@@ -151,8 +185,13 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
         .add(message)
     ]
     if (message.cash !== 0) {
-      if (message.from)
+      if (message.from) {
         messagePromises.push(
+          boardsRef
+            .doc(state.id)
+            .collection('users')
+            .doc(message.from)
+            .update({ 'timestamp.updated': new Date() }),
           boardsRef
             .doc(state.id)
             .collection('users')
@@ -161,7 +200,8 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
               cash: state.users[message.from].cash - message.cash
             })
         )
-      if (message.to)
+      }
+      if (message.to) {
         messagePromises.push(
           boardsRef
             .doc(state.id)
@@ -171,6 +211,7 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
               cash: state.users[message.to].cash + message.cash
             })
         )
+      }
     }
     await Promise.all(messagePromises)
   },
@@ -185,7 +226,10 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
       .doc(state.id)
       .collection('users')
       .doc(payload.uid)
-      .update(payload.user)
+      .update({
+        ...payload.user,
+        'timestamp.updated': new Date()
+      })
   },
   startListener({ state, commit }) {
     const unsubscribeThis = boardsRef.doc(state.id).onSnapshot((doc) => {

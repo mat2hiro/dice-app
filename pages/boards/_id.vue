@@ -75,29 +75,49 @@ export default Vue.extend({
   },
   async asyncData({ params, redirect, store }) {
     const usersRef = boardsRef.doc(params.id).collection('users')
-    const userCount = (await usersRef.where('is_joined', '==', true).get()).size
+    const now = new Date()
+    const userCount = (
+      await usersRef
+        .where('timestamp.left', '==', new Date(0))
+        .where(
+          'timestamp.updated',
+          '>',
+          new Date(now.getTime() - 2 * 60 * 60 * 1000)
+        )
+        .get()
+    ).size
     const username = store.getters['auth/username']
     const uid = store.getters['auth/uid']
-    await usersRef.doc(uid).set({
-      joined_at: new Date(),
-      is_joined: true,
-      order: userCount + 1,
-      username,
-      cash: 1500
-    })
-    if (userCount === 0) {
-      boardsRef.doc(params.id).update({
-        dice: {
-          value: [0, 0],
-          uid,
-          time: new Date()
+    const fbPromises = []
+    fbPromises.push(
+      usersRef.doc(uid).set({
+        timestamp: {
+          joined: now,
+          updated: now,
+          left: new Date(0)
         },
-        throwUser: {
-          uid,
-          double: 0
-        }
+        order: userCount + 1,
+        username,
+        cash: 1500
       })
+    )
+    if (userCount === 0) {
+      fbPromises.push(
+        boardsRef.doc(params.id).update({
+          dice: {
+            value: [0, 0],
+            uid,
+            time: now
+          },
+          throwUser: {
+            uid,
+            double: 0
+          }
+        })
+      )
     }
+    await Promise.all(fbPromises)
+
     return {
       boardId: params.id,
       thisBoardRef: boardsRef.doc(params.id),
@@ -155,15 +175,13 @@ export default Vue.extend({
     })
   },
   async destroyed() {
-    console.log('dest')
     this.unsubscribe()
     this.stopListener()
     const leftCB = [
       this.setUser({
         uid: this.uid,
         user: {
-          left_at: new Date(),
-          is_joined: false
+          'timestamp.left': new Date()
         }
       })
     ]

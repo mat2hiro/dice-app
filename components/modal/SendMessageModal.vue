@@ -91,7 +91,7 @@ export default Vue.extend({
       this.touid = ''
     },
     async submit(ev) {
-      if (this.cashInput < 0) ev.preventDefault()
+      if (this.cashInput < 0) return ev.preventDefault()
       await this.sendMessage({
         from: this.isOwner(this.meuid) ? this.fromuid : this.meuid,
         to: this.touid,
