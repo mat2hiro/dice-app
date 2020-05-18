@@ -43,7 +43,7 @@
           <input v-model="cashInput" type="number" class="form-control" />
         </div>
         <span class="col-3 text-left">
-          / {{ users[meuid] ? users[meuid].cash : '0' }}
+          / {{ users[fromuid] ? users[fromuid].cash : '...' }}
         </span>
       </div>
       <div class="row">
@@ -95,7 +95,7 @@ export default Vue.extend({
       await this.sendMessage({
         from: this.isOwner(this.meuid) ? this.fromuid : this.meuid,
         to: this.touid,
-        time: new Date(),
+        timestamp: { created: new Date() },
         cash: +this.cashInput,
         message: this.message
       })

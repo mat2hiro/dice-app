@@ -38,7 +38,7 @@
       <div class="history-bordered">
         <div
           v-for="message in messages"
-          :key="message.time.getTime()"
+          :key="message.timestamp.created.getTime()"
           class="row history-row"
         >
           <div class="col-12 history-item">

@@ -55,7 +55,7 @@ export default Vue.extend({
     async enter(ev) {
       const boardSnap = await db
         .collection('boards')
-        .where('board_id', '==', this.enterId)
+        .where('boardId', '==', this.enterId)
         .get()
       if (!boardSnap.empty) {
         boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
@@ -67,8 +67,8 @@ export default Vue.extend({
         timestamp: {
           created: new Date()
         },
-        is_active: true,
-        board_id: this.newId,
+        isActive: true,
+        boardId: this.newId,
         owner: this.uid
       })
       this.$router.push(`/boards/${addedRef.id}`)

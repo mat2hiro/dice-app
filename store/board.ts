@@ -1,10 +1,39 @@
 import Vue from 'vue'
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
+import {
+  IUser,
+  IDice,
+  ICard,
+  IThrowUser,
+  IMessage,
+  FDate,
+  ITime,
+  IBoard
+} from '../type'
 import firebase from '~/plugins/firebase'
 
 const boardsRef = firebase.firestore().collection('boards')
 
-export const state = () => ({
+interface IUsers<Dt> {
+  [key: string]: IUser<Dt>
+}
+
+interface State<Dt> {
+  id: string
+  owner: string
+  users: IUsers<Dt>
+  dice: IDice<Dt>
+  card: ICard
+  throwUser: IThrowUser
+  unsubscribe: Function[]
+  history: IDice<Dt>[]
+  messages: IMessage<Dt>[]
+}
+
+interface IState extends State<Date> {}
+interface FState extends State<FDate> {}
+
+export const state = (): IState => ({
   id: '',
   owner: '',
   users: {},
@@ -13,21 +42,21 @@ export const state = () => ({
     uid: '',
     time: new Date()
   },
-  card: { from: 0, to: 16, value: 0 },
+  card: { from: 0, to: 16, value: '0' },
   throwUser: { uid: '', double: 0 },
   unsubscribe: [] as any[],
   history: [] as any[],
   messages: [] as any[]
 })
 
-export type BoardModuleState = ReturnType<typeof state>
+// export type BoardModuleState = ReturnType<typeof state>
 
-export const mutations: MutationTree<BoardModuleState> = {
-  unsubscribe(state, uns) {
+export const mutations: MutationTree<IState> = {
+  unsubscribe(state, uns: Function[]) {
     state.unsubscribe.forEach((un) => un())
     state.unsubscribe = uns
   },
-  init(state, id) {
+  init(state, id: string) {
     state.id = id
     state.owner = ''
     state.users = {}
@@ -36,67 +65,68 @@ export const mutations: MutationTree<BoardModuleState> = {
       uid: '',
       time: new Date()
     }
-    state.card = { from: 0, to: 16, value: 0 }
+    state.card = { from: 0, to: 16, value: '0' }
     state.throwUser = { uid: '', double: 0 }
     state.history = []
     state.messages = []
   },
-  set(state, setState) {
+  set(state, setState: FState) {
     state.id = setState.id || state.id
     state.owner = setState.owner || state.owner
-    state.users = setState.users || state.users
-    state.dice = setState.dice || state.dice
-    if (setState.dice.time.toDate) state.dice.time = setState.dice.time.toDate()
+    state.dice =
+      (setState.dice && { ...setState.dice, time: new Date() }) || state.dice
+    if (setState.dice.time) state.dice.time = setState.dice.time.toDate()
     state.card = setState.card || state.card
     state.throwUser = setState.throwUser || state.throwUser
   },
-  setU(state, { uid, user }) {
-    const timestamp = user.timestamp || {}
-    if (timestamp.joined) timestamp.joined = timestamp.joined.toDate()
-    if (timestamp.left) timestamp.left = timestamp.left.toDate()
-    if (timestamp.updated) timestamp.updated = timestamp.updated.toDate()
-    user.timestamp = timestamp
-    Vue.set(state.users, uid, user)
+  setU(state, { uid, user }: { uid: string; user: IUser<FDate> }) {
+    const timestamp: ITime<FDate> = user.timestamp || {}
+    const ts: ITime<Date> = {}
+    if (timestamp.joined) ts.joined = timestamp.joined.toDate()
+    if (timestamp.left) ts.left = timestamp.left.toDate()
+    if (timestamp.updated) ts.updated = timestamp.updated.toDate()
+    Vue.set(state.users, uid, { ...user, timestamp: ts } as IUser<Date>)
   },
-  removeU(state, uid) {
+  removeU(state, uid: string) {
     Vue.delete(state.users, uid)
   },
-  setM(state, message) {
-    const timestamp = message.timestamp || {}
-    if (timestamp.created) timestamp.created = timestamp.created.toDate()
-    message.timestamp = timestamp
-    state.messages.unshift(message)
+  setM(state, message: IMessage<FDate>) {
+    const timestamp: ITime<FDate> = message.timestamp || {}
+    const ts: ITime<Date> = {}
+    if (timestamp.created) ts.created = timestamp.created.toDate()
+    state.messages.unshift({ ...message, timestamp: ts } as IMessage<Date>)
   },
-  pushHistory(state, dice) {
+  pushHistory(state, dice: IDice<FDate>) {
     if (dice.time.toMillis() === state.dice.time.getTime()) return
-    dice.time = dice.time.toDate()
-    state.history.unshift(dice)
+    state.history.unshift({ ...dice, time: dice.time.toDate() } as IDice<Date>)
   }
 }
 
-export const getters: GetterTree<BoardModuleState, BoardModuleState> = {
-  joinedUsers: ({ users }) => {
+export const getters: GetterTree<IState, IState> = {
+  joinedUsers: ({ users }): IUsers<Date> => {
     const now = new Date().getTime()
     return Object.keys(users).reduce((pre, uid) => {
-      const timestamp = users[uid].timestamp
+      const timestamp = users[uid].timestamp || {}
       const joinedAt = timestamp.joined
       const leftAt = timestamp.left
       const updatedAt = timestamp.updated || joinedAt
       if (
         joinedAt && // joined?
         (!leftAt || joinedAt > leftAt) && // not left?
-        now - updatedAt < 2 * 60 * 60 * 1000 // not outdated?
+        now - updatedAt.getTime() < 2 * 60 * 60 * 1000 // not outdated?
       ) {
         pre[uid] = users[uid]
       }
       return pre
-    }, {})
+    }, {} as IUsers<Date>)
   },
-  isOwner: (state) => (uid) => state.owner === uid,
-  nextUserId: ({ users }, { joinedUsers }) => (uid) => {
+  isOwner: ({ owner }) => (uid: string): boolean => owner === uid,
+  nextUserId: (_, { joinedUsers }: { joinedUsers: IUsers<Date> }) => (
+    uid: string
+  ): string => {
     if (Object.keys(joinedUsers).length === 1) return uid
     const me = joinedUsers[uid]
-    if (!me) return false
+    if (!me) return ''
     const meOrder = me.order === Object.keys(joinedUsers).length ? 0 : me.order
     return Object.keys(joinedUsers).reduce(
       (pre, key) =>
@@ -111,12 +141,20 @@ export const getters: GetterTree<BoardModuleState, BoardModuleState> = {
   }
 }
 
-export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
-  clear({ commit }, id) {
+interface PDice {
+  min: number
+  max: number
+  amount: number
+}
+
+export const actions: ActionTree<IState, IState> = {
+  clear({ commit }, id: string) {
     commit('init', id)
   },
-  throwDice: async ({ state, commit, getters }, payload) => {
-    const { uid, dice } = payload
+  throwDice: async (
+    { state, getters },
+    { uid, dice }: { uid: string; dice: PDice }
+  ) => {
     const diceProps = dice || { min: 1, max: 6, amount: 2 }
     const diceRoll = Array(diceProps.amount)
       .fill(0)
@@ -126,7 +164,7 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
         )
       )
     const isDouble = diceRoll.every((val) => val === diceRoll[0])
-    const nextuid = isDouble ? uid : getters.nextUserId(uid)
+    const nextuid: string = isDouble ? uid : getters.nextUserId(uid)
     await Promise.all([
       boardsRef.doc(state.id).update({
         dice: {
@@ -146,8 +184,8 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
         .update({ 'timestamp.updated': new Date() })
     ])
   },
-  skip: async ({ state, getters }, uid) => {
-    const nextuid = getters.nextUserId(uid)
+  skip: async ({ state, getters }, uid: string) => {
+    const nextuid: string = getters.nextUserId(uid)
     await Promise.all([
       boardsRef.doc(state.id).update({
         throwUser: {
@@ -162,7 +200,7 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
         .update({ 'timestamp.updated': new Date() })
     ])
   },
-  drawCard: async ({ state }, minMax) => {
+  drawCard: async ({ state }, minMax: string[]) => {
     const value = (
       Math.random() * (+minMax[1] - +minMax[0]) +
       +minMax[0]
@@ -177,7 +215,7 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
       })
     ])
   },
-  sendMessage: async ({ state }, message) => {
+  sendMessage: async ({ state }, message: IMessage<Date>) => {
     const messagePromises: Promise<any>[] = [
       boardsRef
         .doc(state.id)
@@ -215,34 +253,38 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
     }
     await Promise.all(messagePromises)
   },
-  setBoard: async ({ state }, board) => {
+  setBoard: async ({ state }, board: Partial<IBoard<Date>>) => {
     await boardsRef.doc(state.id).update({
-      board_id: board.board_id,
+      boardId: board.boardId,
       owner: board.owner
     })
   },
-  setUser: async ({ state }, payload) => {
+  setUser: async (
+    { state },
+    { uid, user }: { uid: string; user: Partial<IUser<Date>> }
+  ) => {
     await boardsRef
       .doc(state.id)
       .collection('users')
-      .doc(payload.uid)
+      .doc(uid)
       .update({
-        ...payload.user,
+        ...user,
         'timestamp.updated': new Date()
       })
   },
   startListener({ state, commit }) {
     const unsubscribeThis = boardsRef.doc(state.id).onSnapshot((doc) => {
-      const data = doc.data()
-      if (data && data.dice) {
+      const data: Partial<IBoard<FDate>> = doc.data() || {}
+      if (data.dice) {
         commit('pushHistory', data.dice)
       }
       commit('set', {
-        board_id: data && data.board_id,
-        owner: data && data.owner,
-        dice: data && data.dice,
-        card: data && data.card,
-        throwUser: data && data.throwUser
+        id: doc.id,
+        boardId: data.boardId,
+        owner: data.owner,
+        dice: data.dice,
+        card: data.card,
+        throwUser: data.throwUser
       })
     })
     const unsubscribeUser = boardsRef
@@ -251,8 +293,8 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
       .orderBy('order')
       .onSnapshot((snap) => {
         snap.docChanges().forEach((change: any) => {
-          const user = change.doc.data()
-          const uid = change.doc.id
+          const user: Partial<IUser<FDate>> = change.doc.data()
+          const uid: string = change.doc.id
 
           switch (change.type) {
             case 'added':
@@ -269,8 +311,8 @@ export const actions: ActionTree<BoardModuleState, BoardModuleState> = {
     const unsubscribeMessage = boardsRef
       .doc(state.id)
       .collection('messages')
-      .where('time', '>', now)
-      .orderBy('time')
+      .orderBy('timestamp.created')
+      .where('timestamp.created', '>', now)
       .onSnapshot((snap) => {
         snap.docChanges().forEach((change) => {
           const message = change.doc.data()
