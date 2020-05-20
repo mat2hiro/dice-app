@@ -1,8 +1,8 @@
 {
-  "name": "mnpl",
+  "name": "dice-app",
   "version": "0.2.0",
   "description": "My supreme Nuxt.js project",
-  "author": "matsume-hiro",
+  "author": "mat2hiro",
   "private": true,
   "scripts": {
     "dev": "nuxt-ts",

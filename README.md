@@ -1,4 +1,4 @@
-# mnpl
+# dice-app
 
 > My supreme Nuxt.js project
 
