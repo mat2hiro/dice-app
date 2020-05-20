@@ -1,7 +1,9 @@
 <template>
   <div>
     <header>
-      <h1><nuxt-link to="/">Dice App</nuxt-link></h1>
+      <h1 class="d-flex align-items-center justify-content-center">
+        <nuxt-link to="/">Dice App</nuxt-link>
+      </h1>
     </header>
     <main class="d-flex justify-content-center">
       <div class="container">
