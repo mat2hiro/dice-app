@@ -1,13 +1,13 @@
 <template>
-  <b-modal id="modal-send-message" @show="reset" @ok="submit" @hidden="reset">
-    <div class="form-group">
+  <b-modal id="modal-send-message" @show="init" @ok="submit" @hidden="reset">
+    <form class="form-group" @submit.stop.prevent="submit">
       <div class="row align-items-center">
         <span class="col-2">
           from:
         </span>
         <div class="col-10">
-          <select :value="fromuid" class="form-control" @change="fromChange">
-            <option v-if="isOwner(meuid)" value="">
+          <select v-model="fromuid" class="form-control">
+            <option v-if="isOwner(meuid)" value="bank">
               Bank
             </option>
             <template v-for="(user, key) in users">
@@ -21,10 +21,12 @@
             </template>
           </select>
         </div>
+      </div>
+      <div class="row align-items-center">
         <span class="col-2">to:</span>
         <div class="col-10">
           <select v-model="touid" class="form-control">
-            <option value="">
+            <option value="bank">
               Bank
             </option>
             <template v-for="(user, key) in users">
@@ -55,7 +57,7 @@
           ></textarea>
         </div>
       </div>
-    </div>
+    </form>
     <template v-slot:modal-ok>
       Submit
     </template>
@@ -67,12 +69,12 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'meuid'],
+  props: ['users', 'meuid', 'defaultToUid'],
   data: () => ({
     cashInput: 0,
     message: '',
-    touid: '',
-    fromuid: ''
+    touid: 'bank',
+    fromuid: 'bank'
   }),
   computed: {
     ...mapGetters('board', ['isOwner'])
@@ -82,24 +84,27 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions('board', ['sendMessage']),
-    fromChange(ev) {
-      this.fromuid = ev.target.value
+    init() {
+      this.reset()
+      this.fromuid = this.meuid
+      this.touid = this.defaultToUid
     },
     reset() {
       this.cashInput = 0
       this.message = ''
-      this.touid = ''
+      this.touid = 'bank'
     },
     async submit(ev) {
+      ev.preventDefault()
       if (this.cashInput < 0) return ev.preventDefault()
       await this.sendMessage({
-        from: this.isOwner(this.meuid) ? this.fromuid : this.meuid,
-        to: this.touid,
+        from: this.fromuid !== 'bank' ? this.fromuid : '',
+        to: this.touid !== 'bank' ? this.touid : '',
         timestamp: { created: new Date() },
         cash: +this.cashInput,
         message: this.message
       })
-      this.reset()
+      this.$bvModal.hide('modal-send-message')
     }
   }
 })

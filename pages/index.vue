@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <form>
+    <form @submit.stop.prevent="enter">
       <div class="form-group">
         <input
           id="boardId"
@@ -9,14 +9,14 @@
           placeholder="Enter boardID"
         />
       </div>
-      <button type="button" class="btn btn-primary" @click="enter">
+      <button type="submit" class="btn btn-primary">
         Enter
       </button>
     </form>
 
     <div>
       <p>Or Create New Board?</p>
-      <form>
+      <form @submit.stop.prevent="create">
         <div class="form-group">
           <input
             v-model="newId"
@@ -24,7 +24,7 @@
             placeholder="New boardID"
           />
         </div>
-        <button type="button" class="btn btn-primary" @click="create">
+        <button type="submit" class="btn btn-primary">
           Create
         </button>
       </form>
@@ -61,7 +61,7 @@ export default Vue.extend({
         boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
       }
     },
-    async create() {
+    async create(ev) {
       if (!this.newId) return
       const addedRef = await db.collection('boards').add({
         timestamp: {

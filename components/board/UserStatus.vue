@@ -38,14 +38,20 @@
             }}</label>
           </div>
           <div class="cash-input col-5 d-flex align-items-center">
-            <input
-              type="number"
-              :disabled="!isOwner(uid)"
-              :value="user.cash"
-              class="form-control"
-              @input="(ev) => setUserCash(ev, key)"
-            />
-            <span>$</span>
+            <div class="input-group">
+              <input
+                type="number"
+                :disabled="!isOwner(uid)"
+                :value="user.cash"
+                class="form-control"
+                @input="(ev) => setUserCash(ev, key)"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-light" @click="openPayModal(key)">
+                  $
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -69,6 +75,10 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions('board', ['setUser']),
+    openPayModal(uid) {
+      // if (this.isOwner(this.uid)) return
+      this.$emit('user-click', uid)
+    },
     async setUsername(ev) {
       if (!ev.target.value) return
       this.$data.nameInput = ev.target.value
@@ -79,6 +89,7 @@ export default Vue.extend({
       await this.setUser({ uid, user: { order: +ev.target.value } })
     },
     async setUserCash(ev, uid) {
+      ev.preventDefault()
       await this.setUser({ uid, user: { cash: +ev.target.value } })
     }
   }
@@ -96,7 +107,7 @@ export default Vue.extend({
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
-.cash-input span {
-  margin-left: 0.5em;
+.cash-input .btn {
+  border: 1px solid #ced4da;
 }
 </style>

@@ -81,6 +81,10 @@ export default Vue.extend({
     border-bottom: 1px solid #ccc;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    transition: background-color 0.15s ease-in-out;
+    &:hover {
+      background: #e5e5e5;
+    }
     &.isActive {
       background: #fff;
       border-color: #ccc;

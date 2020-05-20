@@ -13,6 +13,7 @@
       :throw-uid="throwUser.uid"
       :display-name="displayName"
       :uid="uid"
+      @user-click="showPayModal"
     />
     <nuxt-link to="/"
       ><div class="btn btn-secondary">Leave the board</div></nuxt-link
@@ -39,9 +40,9 @@
               Skip
             </button>
             <button
-              v-b-modal.modal-send-message
               type="button"
               class="btn btn-outline-primary separated"
+              @click="() => showPayModal()"
             >
               Pay
             </button>
@@ -49,7 +50,11 @@
         </div>
       </div>
     </div>
-    <send-message-modal :users="joinedUsers" :meuid="uid" />
+    <send-message-modal
+      :users="joinedUsers"
+      :meuid="uid"
+      :default-to-uid="payTo"
+    />
   </div>
 </template>
 
@@ -132,6 +137,7 @@ export default Vue.extend({
       usersRef: boardsRef.doc('any').collection('users'),
       displayName: '',
       randVal: [0, 16],
+      payTo: '',
       unsibscribe: () => {}
     }
   },
@@ -201,6 +207,13 @@ export default Vue.extend({
       'startListener',
       'stopListener'
     ]),
+    showPayModal(uid = 'bank') {
+      this.payTo = uid
+      // リアクティブ値の伝播より@showのemitのほうが早いので仕方なく遅延を入れる
+      this.$nextTick(() => {
+        this.$bvModal.show('modal-send-message')
+      })
+    },
     async clickThrowDice() {
       await this.throwDice({ uid: this.uid })
     }
