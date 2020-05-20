@@ -262,7 +262,7 @@ export default Vue.extend({
     width: 100%;
     background: #fff;
     border-top: 2px solid #ccc;
-    padding: 15px;
+    padding: 15px 0;
     .row:last-of-type {
       margin-bottom: 0;
     }

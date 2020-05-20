@@ -23,12 +23,15 @@ header {
   top: 0;
   height: 60px;
   width: 100%;
-  padding: 0 2rem;
+  padding: 0 30px;
   background: #fff;
   border-bottom: 2px solid #ccc;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  @media (max-width: 575px) {
+    padding: 0 15px;
+  }
   h1 {
     line-height: 60px;
     font-size: 2em;
