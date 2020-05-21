@@ -43,7 +43,9 @@ export default {
     // Doc: https://bootstrap-vue.js.org
     'bootstrap-vue/nuxt',
     // Doc: https://axios.nuxtjs.org/usage
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
+    // pwa support
+    '@nuxtjs/pwa'
   ],
   /*
    ** Bootstrap Vue configuration
@@ -59,8 +61,26 @@ export default {
       'ToastPlugin',
       'ModalPlugin'
     ],
-    directivePlugins: ['VBPopoverPlugin', 'VBTooltipPlugin', 'VBScrollspyPlugin']
+    directivePlugins: [
+      'VBPopoverPlugin',
+      'VBTooltipPlugin',
+      'VBScrollspyPlugin'
+    ]
   },
+  /*
+   ** nuxt pwa configuration
+   */
+  manifest: {
+    name: 'Dice',
+    title: 'Dice',
+    description:
+      'You can throw dice and everyone joining boards can see the results.',
+    lang: 'ja',
+    theme_color: '#eee',
+    background_color: '#fff',
+    display: 'standalone'
+  },
+
   /*
    ** Axios module configuration
    ** See https://axios.nuxtjs.org/options

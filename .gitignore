@@ -90,3 +90,6 @@ sw.*
 *.swp
 
 *.cache
+
+# service worker
+sw.*
