@@ -9,8 +9,14 @@
       </div>
       <div class="nav-main container"></div>
       <div class="nav-footer container">
-        <button class="btn btn-secondary" @click="signout">Sign out</button>
-        <nuxt-link to="/terms/privacy">Privacy Policy</nuxt-link>
+        <ul>
+          <li>
+            <nuxt-link to="/signout" class="btn btn-secondary"
+              >Sign out</nuxt-link
+            >
+          </li>
+          <li><nuxt-link to="/terms/privacy">Privacy Policy</nuxt-link></li>
+        </ul>
       </div>
     </div>
   </div>
@@ -18,11 +24,9 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapActions } from 'vuex'
 
 export default Vue.extend({
   methods: {
-    ...mapActions('auth', ['signout']),
     leave() {
       console.log('clicked leave.')
     }
@@ -134,6 +138,17 @@ export default Vue.extend({
     margin-bottom: 1em;
     display: block;
   }
+}
+
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 1em;
 }
 
 /*チェックが入ったらもろもろ表示*/

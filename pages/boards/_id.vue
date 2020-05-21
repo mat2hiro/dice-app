@@ -15,9 +15,7 @@
       :uid="uid"
       @user-click="showPayModal"
     />
-    <nuxt-link to="/"
-      ><div class="btn btn-secondary">Leave the board</div></nuxt-link
-    >
+    <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
     <history :history="history" :messages="messages" :users="users" />
     <div class="footer-item">
       <div class="container">
@@ -222,6 +220,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+body {
+  overscroll-behavior-y: contain;
+}
 .board {
   label,
   p {
@@ -257,6 +258,7 @@ export default Vue.extend({
 
   .footer-item {
     position: fixed;
+    z-index: 90;
     bottom: 0;
     left: 0;
     width: 100%;

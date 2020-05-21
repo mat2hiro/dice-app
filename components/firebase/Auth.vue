@@ -22,10 +22,17 @@ export default {
         ],
         callbacks: {
           signInSuccessWithAuthResult: (authResult: any) => {
+            this.$emit('firebasepopup', true)
             this.$router.push('/')
+          },
+          signInFailure: () => {
+            this.$emit('firebasepopup', false)
+          },
+          uiShown: () => {
+            this.$emit('firebasepopup', false)
           }
         },
-        signInFlow: 'popup'
+        signInFlow: 'redirect'
       }
 
       ui.start('#firebaseui-auth-container', config)
