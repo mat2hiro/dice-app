@@ -1,22 +1,46 @@
 <template>
-  <div class="container board">
-    <h2>Board Page</h2>
-    <dice-result
-      :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
-      :dice-value="dice.value"
-      :double="throwUser.double"
-      :card="card"
-      :is-your-time="isYourTime"
-    />
-    <user-status
-      :joined-users="joinedUsers"
-      :throw-uid="throwUser.uid"
-      :display-name="displayName"
-      :uid="uid"
-      @user-click="showPayModal"
-    />
-    <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
-    <history :history="history" :messages="messages" :users="users" />
+  <div
+    v-touch:swipe.right="() => toggleBoardTab('cells')"
+    v-touch:swipe.left="() => toggleBoardTab('default')"
+    class="container board"
+  >
+    <div class="row">
+      <div
+        ref="boardCells"
+        class="col-12 col-md-6 board-column cells"
+        :class="{ 'is-visible': tab === 'cells' }"
+      >
+        <board-cells
+          :users="joinedUsers"
+          :uid="uid"
+          :cells="boardCells"
+          :visited="visited"
+          @position-click="showPositionModal"
+        />
+      </div>
+      <div
+        class="col-12 col-md-6 board-column default"
+        :class="{ 'is-visible': tab === 'default' }"
+      >
+        <h2>Board Page</h2>
+        <dice-result
+          :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
+          :dice-value="dice.value"
+          :double="throwUser.double"
+          :card="card"
+          :is-your-time="isYourTime"
+        />
+        <user-status
+          :joined-users="joinedUsers"
+          :throw-uid="throwUser.uid"
+          :display-name="displayName"
+          :uid="uid"
+          @user-click="showPayModal"
+        />
+        <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
+        <history :history="history" :messages="messages" :users="users" />
+      </div>
+    </div>
     <div class="footer-item">
       <div class="container">
         <div class="row justify-content-end">
@@ -52,6 +76,14 @@
       :users="joinedUsers"
       :meuid="uid"
       :default-to-uid="payTo"
+      :is-owner="isOwner(uid)"
+    />
+    <change-position-modal
+      :users="joinedUsers"
+      :meuid="uid"
+      :default-to-uid="positionTo"
+      :cells="boardCells"
+      :is-owner="isOwner(uid)"
     />
   </div>
 </template>
@@ -64,8 +96,12 @@ import firebase from '~/plugins/firebase'
 import DiceResult from '~/components/board/DiceResult.vue'
 import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
+import BoardCells from '~/components/board/BoardCells.vue'
 
 import SendMessageModal from '~/components/modal/SendMessageModal.vue'
+import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
+
+import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
 
 const boardsRef = firebase.firestore().collection('boards')
 
@@ -74,7 +110,9 @@ export default Vue.extend({
     DiceResult,
     History,
     UserStatus,
-    SendMessageModal
+    SendMessageModal,
+    ChangePositionModal,
+    BoardCells
   },
   async asyncData({ params, redirect, store }) {
     const usersRef = boardsRef.doc(params.id).collection('users')
@@ -101,7 +139,8 @@ export default Vue.extend({
         },
         order: userCount + 1,
         username,
-        cash: 1500
+        cash: 1500,
+        position: 0
       })
     )
     if (userCount === 0) {
@@ -136,6 +175,11 @@ export default Vue.extend({
       displayName: '',
       randVal: [0, 16],
       payTo: '',
+      positionTo: '',
+      boardCells: boardCellsData,
+      visited: true,
+      myPosition: 0,
+      tab: 'default',
       unsibscribe: () => {}
     }
   },
@@ -175,6 +219,17 @@ export default Vue.extend({
           title: 'Send Payment',
           autoHideDelay: 3000
         })
+      } else if (mutation.type === 'board/setU') {
+        if (mutation.payload.uid !== this.uid) return
+        if (mutation.payload.user.position === this.myPosition) return
+        setTimeout(() => {
+          const tgt = document.querySelector('#' + mutation.payload.uid)
+          if (tgt && tgt instanceof HTMLElement && tgt.parentElement) {
+            this.$refs.boardCells.scrollTop = tgt.parentElement.offsetTop - 100
+          }
+        }, 300)
+        this.myPosition = mutation.payload.user.position
+        this.visited = this.tab === 'cells'
       }
     })
   },
@@ -205,11 +260,21 @@ export default Vue.extend({
       'startListener',
       'stopListener'
     ]),
+    toggleBoardTab(tab = 'default') {
+      this.tab = tab
+      if (tab === 'cells') this.visited = true
+    },
     showPayModal(uid = 'bank') {
       this.payTo = uid
       // リアクティブ値の伝播より@showのemitのほうが早いので仕方なく遅延を入れる
       this.$nextTick(() => {
         this.$bvModal.show('modal-send-message')
+      })
+    },
+    showPositionModal(uid) {
+      this.positionTo = uid
+      this.$nextTick(() => {
+        this.$bvModal.show('modal-change-position')
       })
     },
     async clickThrowDice() {
@@ -224,6 +289,33 @@ body {
   overscroll-behavior-y: contain;
 }
 .board {
+  > .row {
+    overflow-x: hidden;
+    flex-wrap: nowrap;
+  }
+  &-column {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    @media (max-width: 767px) {
+      transition: transform 0.5s;
+      &.cells {
+        transform: translateX(-100%);
+        &.is-visible {
+          transform: none;
+        }
+      }
+      &.default {
+        transform: none;
+        &.is-visible {
+          transform: translateX(-100%);
+        }
+      }
+    }
+  }
+
   label,
   p {
     margin: 0;
@@ -261,6 +353,7 @@ body {
     z-index: 90;
     bottom: 0;
     left: 0;
+    height: 70px;
     width: 100%;
     background: #fff;
     border-top: 2px solid #ccc;

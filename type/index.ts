@@ -11,6 +11,7 @@ export interface IUser<Dt> {
   username: string
   cash: number
   order: number
+  position: number
   timestamp: ITime<Dt>
 }
 

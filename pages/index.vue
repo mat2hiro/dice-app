@@ -78,6 +78,10 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+.container {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
 form {
   text-align: center;
   margin-bottom: 40px;

@@ -128,16 +128,13 @@ export const getters: GetterTree<IState, IState> = {
     const me = joinedUsers[uid]
     if (!me) return ''
     const meOrder = me.order === Object.keys(joinedUsers).length ? 0 : me.order
-    return Object.keys(joinedUsers).reduce(
-      (pre, key) =>
-        key !== uid &&
-        (!pre ||
-          (meOrder < joinedUsers[key].order &&
-            joinedUsers[pre].order > joinedUsers[key].order))
-          ? key
-          : pre,
-      ''
-    )
+    return Object.keys(joinedUsers).reduce((pre, key) => {
+      return key !== uid &&
+        meOrder < joinedUsers[key].order &&
+        (!pre || joinedUsers[pre].order > joinedUsers[key].order)
+        ? key
+        : pre
+    }, '')
   }
 }
 
@@ -181,7 +178,15 @@ export const actions: ActionTree<IState, IState> = {
         .doc(state.id)
         .collection('users')
         .doc(uid)
-        .update({ 'timestamp.updated': new Date() })
+        .update({
+          'timestamp.updated': new Date(),
+          position:
+            (state.users[uid].position +
+              diceRoll.reduce((p, v) => {
+                return p + v
+              }, 0)) %
+            40
+        })
     ])
   },
   skip: async ({ state, getters }, uid: string) => {

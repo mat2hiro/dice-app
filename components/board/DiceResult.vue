@@ -1,7 +1,7 @@
 <template>
   <div class="form-group">
     <div class="row align-items-center board-stat">
-      <div class="col-12 col-md-4">
+      <div class="col-12">
         <p class="dice">
           {{ diceUserName }}:
           <span class="border" :class="{ 'text-danger': !!double }">{{
@@ -10,20 +10,18 @@
           = {{ diceValue.reduce((pre, vl) => pre + vl, 0) }}
         </p>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12">
         <p class="double">Double count: {{ double }}</p>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12">
         <p>{{ card.from }} ~ {{ card.to }} : {{ card.value }}</p>
       </div>
     </div>
     <div v-if="isYourTime" class="row align-items-center justify-content-end">
-      <div class="col-12 col-md-6 d-flex align-items-center">
+      <div class="col-12 d-flex align-items-center">
         <p>Now It's Your Turn!</p>
       </div>
-      <div
-        class="col-12 col-md-6 d-flex align-items-center justify-content-end"
-      >
+      <div class="col-12 d-flex align-items-center justify-content-end">
         <input v-model="randVal[0]" class="form-control" /> ~
         <input v-model="randVal[1]" class="form-control" />
         <button

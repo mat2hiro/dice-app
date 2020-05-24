@@ -7,15 +7,11 @@
         </span>
         <div class="col-10">
           <select v-model="fromuid" class="form-control">
-            <option v-if="isOwner(meuid)" value="bank">
+            <option v-if="isOwner" value="bank">
               Bank
             </option>
             <template v-for="(user, key) in users">
-              <option
-                v-if="key === meuid || isOwner(meuid)"
-                :key="key"
-                :value="key"
-              >
+              <option v-if="key === meuid || isOwner" :key="key" :value="key">
                 {{ user.username }}
               </option>
             </template>
@@ -69,16 +65,13 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'meuid', 'defaultToUid'],
+  props: ['users', 'meuid', 'defaultToUid', 'isOwner'],
   data: () => ({
     cashInput: 0,
     message: '',
     touid: 'bank',
     fromuid: 'bank'
   }),
-  computed: {
-    ...mapGetters('board', ['isOwner'])
-  },
   mounted() {
     this.fromuid = this.meuid
   },
@@ -90,13 +83,13 @@ export default Vue.extend({
       this.touid = this.defaultToUid
     },
     reset() {
-      this.cashInput = 0
+      this.cashInput = ''
       this.message = ''
       this.touid = 'bank'
     },
     async submit(ev) {
       ev.preventDefault()
-      if (this.cashInput < 0) return ev.preventDefault()
+      if (this.cashInput < 0) return
       await this.sendMessage({
         from: this.fromuid !== 'bank' ? this.fromuid : '',
         to: this.touid !== 'bank' ? this.touid : '',

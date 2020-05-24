@@ -2,20 +2,20 @@
   <div class="histories-container">
     <div class="row toggle-tab">
       <div
-        class="col-6 col-md-3 text-center tab"
+        class="col-6 text-center tab"
         :class="{ isActive: tabValue === 'dice' }"
         @click="tabValue = 'dice'"
       >
         Dice
       </div>
       <div
-        class="col-6 col-md-3 text-center tab"
+        class="col-6 text-center tab"
         :class="{ isActive: tabValue === 'message' }"
         @click="tabValue = 'message'"
       >
         Message
       </div>
-      <div class="d-none d-md-flex col-md-6 tab-rest"></div>
+      <div class="d-none tab-rest"></div>
     </div>
     <div v-if="tabValue === 'dice'" class="history-container">
       <p>History of dice roll</p>

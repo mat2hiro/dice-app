@@ -1,6 +1,6 @@
 {
   "name": "dice-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "My supreme Nuxt.js project",
   "author": "mat2hiro",
   "private": true,
@@ -21,6 +21,7 @@
     "firebase": "^7.14.3",
     "firebaseui": "^4.5.0",
     "nuxt": "^2.0.0",
+    "vue2-touch-events": "^2.2.1",
     "vuex-persistedstate": "^3.0.1"
   },
   "devDependencies": {

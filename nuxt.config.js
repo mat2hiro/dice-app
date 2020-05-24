@@ -31,7 +31,7 @@ export default {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: [],
+  plugins: [{ src: '~/plugins/vue2-touch-events.ts', ssr: false }],
   /*
    ** Nuxt.js dev-modules
    */

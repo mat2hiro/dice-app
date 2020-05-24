@@ -1,18 +1,18 @@
 <template>
   <div class="form-group">
     <div class="row">
-      <div class="col-12 col-md-4 d-flex align-items-center">
+      <div class="col-12 d-flex align-items-center">
         <label>Your Name</label>
       </div>
-      <div class="col-12 col-md-8">
-        <input :value="nameInput" class="form-control" @keyup="setUsername" />
+      <div class="col-12">
+        <input :value="nameInput" class="form-control" @input="setUsername" />
       </div>
     </div>
     <div class="row align-items-top">
-      <div class="col-12 col-md-4 d-flex">
+      <div class="col-12 d-flex">
         <label class="orders-label">Status</label>
       </div>
-      <div class="col-12 col-md-8 orders">
+      <div class="col-12 orders">
         <div class="row status-row">
           <label class="col-3">Order</label>
           <label class="col-4">Name</label>
