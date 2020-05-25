@@ -15,12 +15,15 @@ jobs:
         id: yarn-cache
         run: echo "::set-output name=dir::$(yarn cache dir)"
       - uses: actions/cache@v1
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
         with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-build_deploy-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build_deploy-
       - name: generate project
         run: |
-          yarn --frozen-lockfile
+          yarn install
           yarn generate
       - name: deploy to firebase
         uses: w9jds/firebase-action@master

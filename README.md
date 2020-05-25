@@ -1,3 +1,5 @@
+![deploy_to_firebase](https://github.com/mat2hiro/dice-app/workflows/deploy_to_firebase/badge.svg?branch=master)
+
 # dice-app
 
 > My supreme Nuxt.js project
