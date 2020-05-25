@@ -16,6 +16,7 @@
           :cells="boardCells"
           :visited="visited"
           @position-click="showPositionModal"
+          @scroll-to-icon="scrollToMyIcon"
         />
       </div>
       <div
@@ -219,17 +220,6 @@ export default Vue.extend({
           title: 'Send Payment',
           autoHideDelay: 3000
         })
-      } else if (mutation.type === 'board/setU') {
-        if (mutation.payload.uid !== this.uid) return
-        if (mutation.payload.user.position === this.myPosition) return
-        setTimeout(() => {
-          const tgt = document.querySelector('#' + mutation.payload.uid)
-          if (tgt && tgt instanceof HTMLElement && tgt.parentElement) {
-            this.$refs.boardCells.scrollTop = tgt.parentElement.offsetTop - 100
-          }
-        }, 300)
-        this.myPosition = mutation.payload.user.position
-        this.visited = this.tab === 'cells'
       }
     })
   },
@@ -264,9 +254,15 @@ export default Vue.extend({
       this.tab = tab
       if (tab === 'cells') this.visited = true
     },
+    scrollToMyIcon() {
+      const tgt = document.querySelector('#' + this.uid)
+      if (tgt && tgt instanceof HTMLElement && tgt.parentElement) {
+        this.$refs.boardCells.scrollTop = tgt.parentElement.offsetTop - 100
+      }
+      this.visited = this.tab === 'cells'
+    },
     showPayModal(uid = 'bank') {
       this.payTo = uid
-      // リアクティブ値の伝播より@showのemitのほうが早いので仕方なく遅延を入れる
       this.$nextTick(() => {
         this.$bvModal.show('modal-send-message')
       })

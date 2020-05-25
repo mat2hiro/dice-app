@@ -13,6 +13,7 @@
           class="col-5 d-flex usericon-container"
           name="icon"
           tag="div"
+          @after-enter="() => emitScroll(uid in positionedUsers(idx))"
         >
           <button
             v-for="key in positionedUsers(idx)"
@@ -81,6 +82,10 @@ export default Vue.extend({
         return
       }
       this.$emit('position-click', uid)
+    },
+    emitScroll(isHere = false) {
+      if (!isHere) return
+      this.$emit('scroll-to-icon')
     }
   }
 })
@@ -139,11 +144,9 @@ export default Vue.extend({
     }
   }
 }
-.icon-enter-active {
-  transition: all 0.25s;
-}
+.icon-enter-active,
 .icon-leave-active {
-  transition: all 0.25s;
+  transition: opacity 0.3s ease, transform 0.3s ease-in-out;
 }
 .icon-enter,
 .icon-leave-to {
