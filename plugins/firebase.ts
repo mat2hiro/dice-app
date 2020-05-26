@@ -9,7 +9,7 @@ if (!firebase.apps.length) {
     storageBucket: 'mnpl-app.appspot.com',
     messagingSenderId: '167003963939',
     appId: '1:167003963939:web:936a9f2effd1575b152796',
-    measurementId: 'G-PTV0FB76J8'
+    measurementId: 'G-2J8QNNLESM'
   })
   if (process.browser) {
     firebase.analytics()
