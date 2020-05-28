@@ -1,36 +1,21 @@
 <template>
-  <div class="form-group">
-    <div class="row align-items-center board-stat">
-      <div class="col-12">
-        <p class="dice">
-          {{ diceUserName }}:
-          <span class="border" :class="{ 'text-danger': !!double }">{{
-            diceValue.join(' + ')
-          }}</span>
-          = {{ diceValue.reduce((pre, vl) => pre + vl, 0) }}
-        </p>
-      </div>
-      <div class="col-12">
-        <p class="double">Double count: {{ double }}</p>
-      </div>
-      <div class="col-12">
-        <p>{{ card.from }} ~ {{ card.to }} : {{ card.value }}</p>
-      </div>
-    </div>
-    <div v-if="isYourTime" class="row align-items-center justify-content-end">
-      <div class="col-12 d-flex align-items-center">
-        <p>Now It's Your Turn!</p>
-      </div>
-      <div class="col-12 d-flex align-items-center justify-content-end">
-        <input v-model="randVal[0]" class="form-control" /> ~
-        <input v-model="randVal[1]" class="form-control" />
-        <button
-          type="button"
-          class="btn btn-secondary flex-shrink-0 separated"
-          @click="drawCard(randVal)"
-        >
-          Generate Random
-        </button>
+  <div class="result-header">
+    <div class="container">
+      <div class="board-stat">
+        <div class="dice">
+          <p>
+            {{ diceUserName }}:
+            <span
+              class="border bg-white"
+              :class="{ 'text-danger': !!double }"
+              >{{ diceValue.join(' + ') }}</span
+            >
+            = {{ diceValue.reduce((pre, vl) => pre + vl, 0) }}
+          </p>
+        </div>
+        <div class="double">
+          <p>Double: {{ double }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -41,14 +26,47 @@ import Vue from 'vue'
 import { mapActions } from 'vuex'
 
 export default Vue.extend({
-  props: ['diceUserName', 'diceValue', 'double', 'card', 'isYourTime'],
-  data: () => ({
-    randVal: [0, 16]
-  }),
-  methods: {
-    ...mapActions('board', ['drawCard'])
-  }
+  props: ['diceUserName', 'diceValue', 'double']
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.result-header {
+  position: absolute;
+  height: 60px;
+  left: 50%;
+  right: 0;
+  z-index: 10;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ccc;
+  max-width: 570px;
+  .container {
+    height: 100%;
+    .board-stat {
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      .dice {
+        margin-right: 1em;
+      }
+    }
+  }
+  @media (max-width: 1199px) {
+    max-width: 480px;
+  }
+  @media (max-width: 991px) {
+    max-width: 360px;
+  }
+  @media (max-width: 767px) {
+    max-width: unset;
+    position: fixed;
+    left: 0;
+    // background: #f5f5f5;
+    // border-bottom: 1px solid #ccc;
+    .container .board-stat {
+    }
+  }
+}
+</style>

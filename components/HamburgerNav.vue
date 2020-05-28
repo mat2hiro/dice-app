@@ -123,10 +123,13 @@ export default Vue.extend({
 
 .nav-header {
   height: 60px;
-  padding: 0 2rem;
+  padding: 0 30px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  @media (max-width: 575px) {
+    padding: 0 15px;
+  }
 }
 
 .nav-main {

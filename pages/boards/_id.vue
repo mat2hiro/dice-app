@@ -4,6 +4,11 @@
     v-touch:swipe.left="() => toggleBoardTab('default')"
     class="container board"
   >
+    <dice-result
+      :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
+      :dice-value="dice.value"
+      :double="throwUser.double"
+    />
     <div class="row">
       <div
         ref="boardCells"
@@ -23,14 +28,6 @@
         class="col-12 col-md-6 board-column default"
         :class="{ 'is-visible': tab === 'default' }"
       >
-        <h2>Board Page</h2>
-        <dice-result
-          :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
-          :dice-value="dice.value"
-          :double="throwUser.double"
-          :card="card"
-          :is-your-time="isYourTime"
-        />
         <user-status
           :joined-users="joinedUsers"
           :throw-uid="throwUser.uid"
@@ -38,6 +35,7 @@
           :uid="uid"
           @user-click="showPayModal"
         />
+        <card-result :card="card" :is-your-time="isYourTime" />
         <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
         <history :history="history" :messages="messages" :users="users" />
       </div>
@@ -95,6 +93,7 @@ import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import firebase from '~/plugins/firebase'
 
 import DiceResult from '~/components/board/DiceResult.vue'
+import CardResult from '~/components/board/CardResult.vue'
 import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
@@ -109,6 +108,7 @@ const boardsRef = firebase.firestore().collection('boards')
 export default Vue.extend({
   components: {
     DiceResult,
+    CardResult,
     History,
     UserStatus,
     SendMessageModal,
@@ -288,16 +288,24 @@ body {
   > .row {
     overflow-x: hidden;
     flex-wrap: nowrap;
+    margin-bottom: 0;
   }
   &-column {
     padding-top: 40px;
     padding-bottom: 40px;
-    max-height: calc(100vh - 130px);
+    margin-top: 60px;
+    max-height: calc(100vh - 190px);
     overflow-y: auto;
     scroll-behavior: smooth;
+    &.cells {
+      margin-top: 0;
+      max-height: calc(100vh - 130px);
+    }
     @media (max-width: 767px) {
       transition: transform 0.5s;
       &.cells {
+        margin-top: 60px;
+        max-height: calc(100vh - 190px);
         transform: translateX(-100%);
         &.is-visible {
           transform: none;
