@@ -15,7 +15,15 @@
           tag="div"
           @after-enter="() => emitScroll(uid in positionedUsers(idx))"
         >
-          <button
+          <user-button
+            v-for="key in positionedUsers(idx)"
+            :key="key"
+            :html-id="key"
+            :username="users[key].username"
+            :uid="key"
+            :on-click="(e) => openPositionModal(e, key)"
+          />
+          <!-- <button
             v-for="key in positionedUsers(idx)"
             :id="key"
             :key="key"
@@ -25,7 +33,7 @@
             @click="(e) => openPositionModal(e, key)"
           >
             {{ users[key].username[0] }}
-          </button>
+          </button> -->
         </transition-group>
         <div class="col-7 cell-name">
           {{ cell.name }}
@@ -40,7 +48,12 @@ import crypto from 'crypto'
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 
+import UserButton from '~/components/parts/UserButton.vue'
+
 export default Vue.extend({
+  components: {
+    UserButton
+  },
   props: ['users', 'cells', 'uid', 'visited'],
   computed: {
     ...mapGetters('board', ['isOwner']),
@@ -53,27 +66,27 @@ export default Vue.extend({
           return pre
         }, {})
       }
-    },
-    userColor() {
-      return (uid) => {
-        const bg =
-          '#' +
-          crypto
-            .createHash('md5')
-            .update(uid)
-            .digest('hex')
-            .slice(0, 6)
-        const r = parseInt(bg.substr(1, 2), 16)
-        const g = parseInt(bg.substr(3, 2), 16)
-        const b = parseInt(bg.substr(5, 2), 16)
-
-        const cl = (r * 299 + g * 587 + b * 114) / 1000 < 128 ? '#fff' : '#000'
-        return {
-          background: bg,
-          color: cl
-        }
-      }
     }
+    // userColor() {
+    //   return (uid) => {
+    //     const bg =
+    //       '#' +
+    //       crypto
+    //         .createHash('md5')
+    //         .update(uid)
+    //         .digest('hex')
+    //         .slice(0, 6)
+    //     const r = parseInt(bg.substr(1, 2), 16)
+    //     const g = parseInt(bg.substr(3, 2), 16)
+    //     const b = parseInt(bg.substr(5, 2), 16)
+
+    //     const cl = (r * 299 + g * 587 + b * 114) / 1000 < 128 ? '#fff' : '#000'
+    //     return {
+    //       background: bg,
+    //       color: cl
+    //     }
+    //   }
+    // }
   },
   methods: {
     openPositionModal(ev, uid) {
@@ -106,21 +119,21 @@ export default Vue.extend({
   }
   .usericon-container {
     flex-wrap: wrap;
-    .user-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      margin-right: 10px;
-      width: 24px;
-      height: 24px;
-      border: 1px solid #ccc;
-      border-radius: 50%;
-      overflow: hidden;
-      &:last-of-type {
-        margin-right: 0;
-      }
-    }
+    // .user-icon {
+    //   display: flex;
+    //   align-items: center;
+    //   justify-content: center;
+    //   padding: 0;
+    //   margin-right: 10px;
+    //   width: 24px;
+    //   height: 24px;
+    //   border: 1px solid #ccc;
+    //   border-radius: 50%;
+    //   overflow: hidden;
+    //   &:last-of-type {
+    //     margin-right: 0;
+    //   }
+    // }
   }
   @media (max-width: 959px) {
     .usericon-container .user-icon {

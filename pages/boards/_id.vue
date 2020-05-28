@@ -40,37 +40,12 @@
         <history :history="history" :messages="messages" :users="users" />
       </div>
     </div>
-    <div class="footer-item">
-      <div class="container">
-        <div class="row justify-content-end">
-          <div class="diceButtons col-12 col-md-6 d-flex justify-content-end">
-            <button
-              v-if="isYourTime"
-              type="buttton"
-              class="btn btn-primary separated"
-              @click="clickThrowDice"
-            >
-              Throw Dice
-            </button>
-            <button
-              v-if="isYourTime"
-              type="button"
-              class="btn btn-success separated"
-              @click="skip(uid)"
-            >
-              Skip
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary separated"
-              @click="() => showPayModal()"
-            >
-              Pay
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <footer-buttons
+      :users="joinedUsers"
+      :uid="uid"
+      :is-your-time="isYourTime"
+      @pay-click="showPayModal"
+    />
     <send-message-modal
       :users="joinedUsers"
       :meuid="uid"
@@ -97,6 +72,7 @@ import CardResult from '~/components/board/CardResult.vue'
 import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
+import FooterButtons from '~/components/board/FooterButtons.vue'
 
 import SendMessageModal from '~/components/modal/SendMessageModal.vue'
 import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
@@ -113,7 +89,8 @@ export default Vue.extend({
     UserStatus,
     SendMessageModal,
     ChangePositionModal,
-    BoardCells
+    BoardCells,
+    FooterButtons
   },
   async asyncData({ params, redirect, store }) {
     const usersRef = boardsRef.doc(params.id).collection('users')
@@ -350,21 +327,6 @@ body {
   }
   button.separated {
     margin-left: 1em;
-  }
-
-  .footer-item {
-    position: fixed;
-    z-index: 90;
-    bottom: 0;
-    left: 0;
-    height: 70px;
-    width: 100%;
-    background: #fff;
-    border-top: 2px solid #ccc;
-    padding: 15px 0;
-    .row:last-of-type {
-      margin-bottom: 0;
-    }
   }
 }
 
