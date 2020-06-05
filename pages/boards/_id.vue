@@ -33,6 +33,7 @@
             :uid="uid"
             :cells="boardCells"
             :visited="visited"
+            :has-auth="isOwner(uid) || me.auth.position"
             @position-click="showPositionModal"
             @scroll-to-icon="scrollToMyIcon"
           />
@@ -42,11 +43,12 @@
           :class="{ 'is-visible': tab === 'default' }"
         >
           <user-status
-            :joined-users="joinedUsers"
+            :users="joinedUsers"
             :throw-uid="throwUser.uid"
             :display-name="displayName"
             :uid="uid"
-            @user-click="showPayModal"
+            @username-click="showAuthModal"
+            @pay-click="showPayModal"
           />
           <card-result :card="card" :is-your-time="isYourTime" />
           <nuxt-link to="/" class="btn btn-secondary"
@@ -64,15 +66,20 @@
       <send-message-modal
         :users="joinedUsers"
         :meuid="uid"
-        :default-to-uid="payTo"
-        :is-owner="isOwner(uid)"
+        :default-to-uid="modalTarget"
+        :has-auth="isOwner(uid) || me.auth.payment"
       />
       <change-position-modal
         :users="joinedUsers"
         :meuid="uid"
-        :default-to-uid="positionTo"
+        :default-to-uid="modalTarget"
         :cells="boardCells"
-        :is-owner="isOwner(uid)"
+        :has-auth="isOwner(uid) || me.auth.position"
+      />
+      <change-auth-modal
+        :user="joinedUsers[modalTarget]"
+        :uid="modalTarget"
+        :has-auth="isOwner(uid)"
       />
     </div>
   </div>
@@ -92,6 +99,7 @@ import FooterButtons from '~/components/board/FooterButtons.vue'
 
 import SendMessageModal from '~/components/modal/SendMessageModal.vue'
 import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
+import ChangeAuthModal from '~/components/modal/ChangeAuthModal.vue'
 
 import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
 
@@ -105,6 +113,7 @@ export default Vue.extend({
     UserStatus,
     SendMessageModal,
     ChangePositionModal,
+    ChangeAuthModal,
     BoardCells,
     FooterButtons
   },
@@ -134,7 +143,11 @@ export default Vue.extend({
         order: userCount + 1,
         username,
         cash: 1500,
-        position: 0
+        position: 0,
+        auth: {
+          payment: false,
+          position: false
+        }
       })
     )
     if (userCount === 0) {
@@ -168,8 +181,7 @@ export default Vue.extend({
       usersRef: boardsRef.doc('any').collection('users'),
       displayName: '',
       randVal: [0, 16],
-      payTo: '',
-      positionTo: '',
+      modalTarget: '',
       boardCells: boardCellsData,
       visited: true,
       myPosition: 0,
@@ -190,6 +202,9 @@ export default Vue.extend({
     ...mapGetters('board', ['joinedUsers', 'isOwner', 'nextUser']),
     isYourTime() {
       return this.uid === this.throwUser.uid
+    },
+    me() {
+      return this.joinedUsers[this.uid] || { auth: {}, timestamp: {} }
     }
   },
   mounted() {
@@ -255,15 +270,21 @@ export default Vue.extend({
       this.visited = this.tab === 'cells'
     },
     showPayModal(uid = 'bank') {
-      this.payTo = uid
+      this.modalTarget = uid
       this.$nextTick(() => {
         this.$bvModal.show('modal-send-message')
       })
     },
     showPositionModal(uid) {
-      this.positionTo = uid
+      this.modalTarget = uid
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-position')
+      })
+    },
+    showAuthModal(uid) {
+      this.modalTarget = uid
+      this.$nextTick(() => {
+        this.$bvModal.show('modal-change-auth')
       })
     },
     async clickThrowDice() {

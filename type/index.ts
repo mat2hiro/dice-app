@@ -7,11 +7,17 @@ export interface ITime<Dt> {
   [key: string]: Dt
 }
 
+interface IAuth {
+  payment: boolean
+  position: boolean
+}
+
 export interface IUser<Dt> {
   username: string
   cash: number
   order: number
   position: number
+  auth: IAuth
   timestamp: ITime<Dt>
 }
 

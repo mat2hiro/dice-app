@@ -7,11 +7,11 @@
         </span>
         <div class="col-10">
           <select v-model="fromuid" class="form-control">
-            <option v-if="isOwner" value="bank">
+            <option v-if="hasAuth" value="bank">
               Bank
             </option>
             <template v-for="(user, key) in users">
-              <option v-if="key === meuid || isOwner" :key="key" :value="key">
+              <option v-if="key === meuid || hasAuth" :key="key" :value="key">
                 {{ user.username }}
               </option>
             </template>
@@ -65,7 +65,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'meuid', 'defaultToUid', 'isOwner'],
+  props: ['users', 'meuid', 'defaultToUid', 'hasAuth'],
   data: () => ({
     cashInput: 0,
     message: '',

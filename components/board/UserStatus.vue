@@ -19,7 +19,7 @@
           <label class="col-5">Cash</label>
         </div>
         <div
-          v-for="(user, key) in joinedUsers"
+          v-for="(user, key) in users"
           :key="key"
           class="row align-items-center"
         >
@@ -32,7 +32,7 @@
               @input="(ev) => setUserOrder(ev, key)"
             />
           </div>
-          <div class="col-4">
+          <div class="username col-4" @click="openAuthModal(key)">
             <label :class="{ 'text-primary': key === throwUid }">{{
               user.username
             }}</label>
@@ -64,7 +64,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['joinedUsers', 'throwUid', 'uid', 'displayName'],
+  props: ['users', 'throwUid', 'uid', 'displayName'],
   data() {
     return {
       nameInput: this.$props.displayName
@@ -77,7 +77,10 @@ export default Vue.extend({
     ...mapActions('board', ['setUser']),
     openPayModal(uid) {
       // if (this.isOwner(this.uid)) return
-      this.$emit('user-click', uid)
+      this.$emit('pay-click', uid)
+    },
+    openAuthModal(uid) {
+      this.$emit('username-click', uid)
     },
     async setUsername(ev) {
       if (!ev.target.value) return
@@ -106,6 +109,12 @@ export default Vue.extend({
 .status-row {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+}
+.username {
+  cursor: pointer;
+  > * {
+    cursor: pointer;
+  }
 }
 .cash-input .btn {
   border: 1px solid #ced4da;
