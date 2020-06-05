@@ -1,44 +1,48 @@
 <template>
   <div class="footer-item">
-    <div class="container">
-      <div class="row justify-content-end">
-        <div class="diceButtons col-md-6 d-flex justify-content-end">
-          <div class="d-md-none">
-            <input id="ui-open" class="d-none" type="checkbox" />
-            <label for="ui-open" class="uiopen-label"> </label>
-            <div class="user-icons">
-              <user-button
-                v-for="(user, key) in users"
-                :key="key"
-                :username="user.username"
-                :uid="key"
-                :on-click="() => openPayModal(key)"
-              />
+    <div class="wrapper d-relative">
+      <div class="container">
+        <div class="row justify-content-end">
+          <div class="diceButtons col-md-6 d-flex justify-content-end">
+            <div class="d-md-none">
+              <input id="ui-open" class="d-none" type="checkbox" />
+              <label for="ui-open" class="uiopen-label"> </label>
+              <div class="user-icons">
+                <div class="container">
+                  <user-button
+                    v-for="(user, key) in users"
+                    :key="key"
+                    :username="user.username"
+                    :uid="key"
+                    :on-click="() => openPayModal(key)"
+                  />
+                </div>
+              </div>
             </div>
+            <button
+              v-if="isYourTime"
+              type="buttton"
+              class="btn btn-primary ml-auto"
+              @click="clickThrowDice"
+            >
+              Throw Dice
+            </button>
+            <button
+              v-if="isYourTime"
+              type="button"
+              class="btn btn-success separated"
+              @click="skip(uid)"
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary separated"
+              @click="openPayModal()"
+            >
+              Pay
+            </button>
           </div>
-          <button
-            v-if="isYourTime"
-            type="buttton"
-            class="btn btn-primary ml-auto"
-            @click="clickThrowDice"
-          >
-            Throw Dice
-          </button>
-          <button
-            v-if="isYourTime"
-            type="button"
-            class="btn btn-success separated"
-            @click="skip(uid)"
-          >
-            Skip
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-primary separated"
-            @click="openPayModal()"
-          >
-            Pay
-          </button>
         </div>
       </div>
     </div>
@@ -81,8 +85,8 @@ export default Vue.extend({
   width: 100%;
   background: #fff;
   border-top: 2px solid #ccc;
-  .container {
-    position: relative;
+  .wrapper > .container {
+    position: static;
     padding-top: 15px;
     padding-bottom: 15px;
   }
@@ -104,7 +108,7 @@ export default Vue.extend({
   bottom: calc(100% - 1px);
   left: 0;
   right: 0;
-  padding: 15px 15px 0 15px;
+  padding-top: 15px;
   .user-icon {
     width: 26px;
     height: 26px;
@@ -114,6 +118,7 @@ export default Vue.extend({
 }
 
 .uiopen-label {
+  cursor: pointer;
   position: relative;
   height: 100%;
   width: 30px;

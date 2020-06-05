@@ -1,64 +1,80 @@
 <template>
-  <div
-    v-touch:swipe.right="() => toggleBoardTab('cells')"
-    v-touch:swipe.left="() => toggleBoardTab('default')"
-    class="container board"
-  >
-    <dice-result
-      :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
-      :dice-value="dice.value"
-      :double="throwUser.double"
-    />
-    <div class="row">
-      <div
-        ref="boardCells"
-        class="col-12 col-md-6 board-column cells"
-        :class="{ 'is-visible': tab === 'cells' }"
-      >
-        <board-cells
-          :users="joinedUsers"
-          :uid="uid"
-          :cells="boardCells"
-          :visited="visited"
-          @position-click="showPositionModal"
-          @scroll-to-icon="scrollToMyIcon"
-        />
-      </div>
-      <div
-        class="col-12 col-md-6 board-column default"
-        :class="{ 'is-visible': tab === 'default' }"
-      >
-        <user-status
-          :joined-users="joinedUsers"
-          :throw-uid="throwUser.uid"
-          :display-name="displayName"
-          :uid="uid"
-          @user-click="showPayModal"
-        />
-        <card-result :card="card" :is-your-time="isYourTime" />
-        <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
-        <history :history="history" :messages="messages" :users="users" />
-      </div>
+  <div class="d-relative wrapper">
+    <div
+      class="d-sm-flex d-md-none swipe left"
+      @click="() => toggleBoardTab('cells')"
+    >
+      <span><<</span>
     </div>
-    <footer-buttons
-      :users="joinedUsers"
-      :uid="uid"
-      :is-your-time="isYourTime"
-      @pay-click="showPayModal"
-    />
-    <send-message-modal
-      :users="joinedUsers"
-      :meuid="uid"
-      :default-to-uid="payTo"
-      :is-owner="isOwner(uid)"
-    />
-    <change-position-modal
-      :users="joinedUsers"
-      :meuid="uid"
-      :default-to-uid="positionTo"
-      :cells="boardCells"
-      :is-owner="isOwner(uid)"
-    />
+    <div
+      class="d-sm-flex d-md-none swipe right"
+      @click="() => toggleBoardTab('default')"
+    >
+      <span>>></span>
+    </div>
+    <div
+      v-touch:swipe.right="() => toggleBoardTab('cells')"
+      v-touch:swipe.left="() => toggleBoardTab('default')"
+      class="container board"
+    >
+      <dice-result
+        :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
+        :dice-value="dice.value"
+        :double="throwUser.double"
+      />
+      <div class="row">
+        <div
+          ref="boardCells"
+          class="col-12 col-md-6 board-column cells"
+          :class="{ 'is-visible': tab === 'cells' }"
+        >
+          <board-cells
+            :users="joinedUsers"
+            :uid="uid"
+            :cells="boardCells"
+            :visited="visited"
+            @position-click="showPositionModal"
+            @scroll-to-icon="scrollToMyIcon"
+          />
+        </div>
+        <div
+          class="col-12 col-md-6 board-column default"
+          :class="{ 'is-visible': tab === 'default' }"
+        >
+          <user-status
+            :joined-users="joinedUsers"
+            :throw-uid="throwUser.uid"
+            :display-name="displayName"
+            :uid="uid"
+            @user-click="showPayModal"
+          />
+          <card-result :card="card" :is-your-time="isYourTime" />
+          <nuxt-link to="/" class="btn btn-secondary"
+            >Leave the board</nuxt-link
+          >
+          <history :history="history" :messages="messages" :users="users" />
+        </div>
+      </div>
+      <footer-buttons
+        :users="joinedUsers"
+        :uid="uid"
+        :is-your-time="isYourTime"
+        @pay-click="showPayModal"
+      />
+      <send-message-modal
+        :users="joinedUsers"
+        :meuid="uid"
+        :default-to-uid="payTo"
+        :is-owner="isOwner(uid)"
+      />
+      <change-position-modal
+        :users="joinedUsers"
+        :meuid="uid"
+        :default-to-uid="positionTo"
+        :cells="boardCells"
+        :is-owner="isOwner(uid)"
+      />
+    </div>
   </div>
 </template>
 
@@ -260,6 +276,31 @@ export default Vue.extend({
 <style lang="scss">
 body {
   overscroll-behavior-y: contain;
+}
+.wrapper > .swipe {
+  position: absolute;
+  display: none;
+  align-items: center;
+  width: 50vw;
+  top: 0;
+  bottom: 0;
+  padding: 0 30px;
+  span {
+    padding: 15px 0;
+    opacity: 0.75;
+    cursor: pointer;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  &.left {
+    left: 0;
+    justify-content: flex-start;
+  }
+  &.right {
+    right: 0;
+    justify-content: flex-end;
+  }
 }
 .board {
   > .row {
