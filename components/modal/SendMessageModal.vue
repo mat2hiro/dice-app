@@ -11,7 +11,7 @@
               Bank
             </option>
             <template v-for="(user, key) in users">
-              <option v-if="key === meuid || hasAuth" :key="key" :value="key">
+              <option v-if="key === uid || hasAuth" :key="key" :value="key">
                 {{ user.username }}
               </option>
             </template>
@@ -65,21 +65,24 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'meuid', 'defaultToUid', 'hasAuth'],
+  props: ['users', 'defaultToUid', 'hasAuth'],
   data: () => ({
     cashInput: 0,
     message: '',
     touid: 'bank',
     fromuid: 'bank'
   }),
+  computed: {
+    ...mapGetters('auth', ['uid'])
+  },
   mounted() {
-    this.fromuid = this.meuid
+    this.fromuid = this.uid
   },
   methods: {
     ...mapActions('board', ['sendMessage']),
     init() {
       this.reset()
-      this.fromuid = this.meuid
+      this.fromuid = this.uid
       this.touid = this.defaultToUid
     },
     reset() {

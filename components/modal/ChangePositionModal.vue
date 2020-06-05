@@ -8,7 +8,7 @@
         <div class="col-10">
           <select v-model="touid" class="form-control">
             <template v-for="(user, key) in users">
-              <option v-if="key === meuid || hasAuth" :key="key" :value="key">
+              <option v-if="key === uid || hasAuth" :key="key" :value="key">
                 {{ user.username }}
               </option>
             </template>
@@ -41,11 +41,14 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'meuid', 'defaultToUid', 'cells', 'hasAuth'],
+  props: ['users', 'defaultToUid', 'cells', 'hasAuth'],
   data: () => ({
     touid: '',
     positionIdx: ''
   }),
+  computed: {
+    ...mapGetters('auth', ['uid'])
+  },
   methods: {
     ...mapActions('board', ['setUser']),
     init() {

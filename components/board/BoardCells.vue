@@ -43,8 +43,9 @@ export default Vue.extend({
   components: {
     UserButton
   },
-  props: ['users', 'cells', 'uid', 'visited', 'hasAuth'],
+  props: ['users', 'cells', 'visited', 'hasAuth'],
   computed: {
+    ...mapGetters('auth', ['uid']),
     positionedUsers() {
       return (idx) => {
         return Object.keys(this.users).reduce((pre, k) => {
@@ -87,21 +88,6 @@ export default Vue.extend({
   }
   .usericon-container {
     flex-wrap: wrap;
-    // .user-icon {
-    //   display: flex;
-    //   align-items: center;
-    //   justify-content: center;
-    //   padding: 0;
-    //   margin-right: 10px;
-    //   width: 24px;
-    //   height: 24px;
-    //   border: 1px solid #ccc;
-    //   border-radius: 50%;
-    //   overflow: hidden;
-    //   &:last-of-type {
-    //     margin-right: 0;
-    //   }
-    // }
   }
   @media (max-width: 959px) {
     .usericon-container .user-icon {

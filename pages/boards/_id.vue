@@ -30,7 +30,6 @@
         >
           <board-cells
             :users="joinedUsers"
-            :uid="uid"
             :cells="boardCells"
             :visited="visited"
             :has-auth="isOwner(uid) || me.auth.position"
@@ -46,7 +45,6 @@
             :users="joinedUsers"
             :throw-uid="throwUser.uid"
             :display-name="displayName"
-            :uid="uid"
             @username-click="showAuthModal"
             @pay-click="showPayModal"
           />
@@ -59,26 +57,23 @@
       </div>
       <footer-buttons
         :users="joinedUsers"
-        :uid="uid"
         :is-your-time="isYourTime"
         @pay-click="showPayModal"
       />
       <send-message-modal
         :users="joinedUsers"
-        :meuid="uid"
         :default-to-uid="modalTarget"
         :has-auth="isOwner(uid) || me.auth.payment"
       />
       <change-position-modal
         :users="joinedUsers"
-        :meuid="uid"
         :default-to-uid="modalTarget"
         :cells="boardCells"
         :has-auth="isOwner(uid) || me.auth.position"
       />
       <change-auth-modal
         :user="joinedUsers[modalTarget]"
-        :uid="modalTarget"
+        :to-uid="modalTarget"
         :has-auth="isOwner(uid)"
       />
     </div>

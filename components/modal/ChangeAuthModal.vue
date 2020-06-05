@@ -46,7 +46,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['user', 'uid', 'hasAuth'],
+  props: ['user', 'toUid', 'hasAuth'],
   data: () => ({
     auth: {
       payment: false,
@@ -68,12 +68,8 @@ export default Vue.extend({
     async submit(ev) {
       ev.preventDefault()
       await this.setUser({
-        uid: this.uid,
+        uid: this.toUid,
         user: { auth: this.auth }
-      })
-      console.log({
-        uid: this.uid,
-        auth: this.auth
       })
       this.$bvModal.hide('modal-change-auth')
     }

@@ -64,13 +64,14 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'throwUid', 'uid', 'displayName'],
+  props: ['users', 'throwUid', 'displayName'],
   data() {
     return {
       nameInput: this.$props.displayName
     }
   },
   computed: {
+    ...mapGetters('auth', ['uid']),
     ...mapGetters('board', ['isOwner'])
   },
   methods: {

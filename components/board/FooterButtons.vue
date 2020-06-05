@@ -61,6 +61,7 @@ export default Vue.extend({
   },
   props: ['users', 'uid', 'isYourTime'],
   computed: {
+    ...mapGetters('auth', ['uid']),
     ...mapGetters('board', ['isOwner'])
   },
   methods: {
