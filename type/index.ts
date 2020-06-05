@@ -39,7 +39,7 @@ export interface ICard {
 }
 
 export interface IBoard<Dt> {
-  boardId: string
+  boardName: string
   card: ICard
   dice: IDice<Dt>
   isActive: boolean

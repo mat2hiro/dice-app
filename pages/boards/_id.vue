@@ -41,6 +41,7 @@
           class="col-12 col-md-6 board-column default"
           :class="{ 'is-visible': tab === 'default' }"
         >
+          <h2>{{ boardName }}</h2>
           <user-status
             :users="joinedUsers"
             :throw-uid="throwUser.uid"
@@ -186,6 +187,8 @@ export default Vue.extend({
   },
   computed: {
     ...mapState('board', [
+      'id',
+      'boardName',
       'dice',
       'throwUser',
       'users',
@@ -204,7 +207,6 @@ export default Vue.extend({
   },
   mounted() {
     this.clear(this.$data.boardId)
-    this.startListener()
     this.unsubscribe = this.$store.subscribe((mutation, state) => {
       if (mutation.type === 'board/setM') {
         const message = mutation.payload
@@ -225,10 +227,10 @@ export default Vue.extend({
         })
       }
     })
+    this.startListener()
   },
   async destroyed() {
     this.unsubscribe()
-    this.stopListener()
     const leftCB = [
       this.setUser({
         uid: this.uid,
@@ -241,6 +243,7 @@ export default Vue.extend({
       leftCB.push(this.skip(this.uid))
     }
     await Promise.all(leftCB)
+    this.stopListener()
   },
   methods: {
     ...mapActions('board', [

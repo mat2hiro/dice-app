@@ -3,7 +3,7 @@
     <form @submit.stop.prevent="enter">
       <div class="form-group">
         <input
-          id="boardId"
+          id="boardName"
           v-model="enterId"
           class="form-control"
           placeholder="Enter boardID"
@@ -55,7 +55,7 @@ export default Vue.extend({
     async enter(ev) {
       const boardSnap = await db
         .collection('boards')
-        .where('boardId', '==', this.enterId)
+        .where('boardName', '==', this.enterId)
         .get()
       if (!boardSnap.empty) {
         boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
@@ -68,7 +68,7 @@ export default Vue.extend({
           created: new Date()
         },
         isActive: true,
-        boardId: this.newId,
+        boardName: this.newId,
         owner: this.uid
       })
       this.$router.push(`/boards/${addedRef.id}`)

@@ -20,6 +20,7 @@ interface IUsers<Dt> {
 
 interface State<Dt> {
   id: string
+  boardName: string
   owner: string
   users: IUsers<Dt>
   dice: IDice<Dt>
@@ -35,6 +36,7 @@ interface FState extends State<FDate> {}
 
 export const state = (): IState => ({
   id: '',
+  boardName: '',
   owner: '',
   users: {},
   dice: {
@@ -58,6 +60,7 @@ export const mutations: MutationTree<IState> = {
   },
   init(state, id: string) {
     state.id = id
+    state.boardName = ''
     state.owner = ''
     state.users = {}
     state.dice = {
@@ -72,6 +75,7 @@ export const mutations: MutationTree<IState> = {
   },
   set(state, setState: FState) {
     state.id = setState.id || state.id
+    state.boardName = setState.boardName || state.boardName
     state.owner = setState.owner || state.owner
     state.dice =
       (setState.dice && { ...setState.dice, time: new Date() }) || state.dice
@@ -260,7 +264,7 @@ export const actions: ActionTree<IState, IState> = {
   },
   setBoard: async ({ state }, board: Partial<IBoard<Date>>) => {
     await boardsRef.doc(state.id).update({
-      boardId: board.boardId,
+      boardName: board.boardName,
       owner: board.owner
     })
   },
@@ -285,7 +289,7 @@ export const actions: ActionTree<IState, IState> = {
       }
       commit('set', {
         id: doc.id,
-        boardId: data.boardId,
+        boardName: data.boardName,
         owner: data.owner,
         dice: data.dice,
         card: data.card,

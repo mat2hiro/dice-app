@@ -59,7 +59,7 @@ export default Vue.extend({
   components: {
     UserButton
   },
-  props: ['users', 'uid', 'isYourTime'],
+  props: ['users', 'isYourTime'],
   computed: {
     ...mapGetters('auth', ['uid']),
     ...mapGetters('board', ['isOwner'])
