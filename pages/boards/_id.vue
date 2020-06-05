@@ -1,89 +1,80 @@
 <template>
-  <div
-    v-touch:swipe.right="() => toggleBoardTab('cells')"
-    v-touch:swipe.left="() => toggleBoardTab('default')"
-    class="container board"
-  >
-    <dice-result
-      :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
-      :dice-value="dice.value"
-      :double="throwUser.double"
-    />
-    <div class="row">
-      <div
-        ref="boardCells"
-        class="col-12 col-md-6 board-column cells"
-        :class="{ 'is-visible': tab === 'cells' }"
-      >
-        <board-cells
-          :users="joinedUsers"
-          :uid="uid"
-          :cells="boardCells"
-          :visited="visited"
-          @position-click="showPositionModal"
-          @scroll-to-icon="scrollToMyIcon"
-        />
-      </div>
-      <div
-        class="col-12 col-md-6 board-column default"
-        :class="{ 'is-visible': tab === 'default' }"
-      >
-        <user-status
-          :joined-users="joinedUsers"
-          :throw-uid="throwUser.uid"
-          :display-name="displayName"
-          :uid="uid"
-          @user-click="showPayModal"
-        />
-        <card-result :card="card" :is-your-time="isYourTime" />
-        <nuxt-link to="/" class="btn btn-secondary">Leave the board</nuxt-link>
-        <history :history="history" :messages="messages" :users="users" />
-      </div>
+  <div class="d-relative wrapper">
+    <div
+      class="d-sm-flex d-md-none swipe left"
+      @click="() => toggleBoardTab('cells')"
+    >
+      <span><<</span>
     </div>
-    <div class="footer-item">
-      <div class="container">
-        <div class="row justify-content-end">
-          <div class="diceButtons col-12 col-md-6 d-flex justify-content-end">
-            <button
-              v-if="isYourTime"
-              type="buttton"
-              class="btn btn-primary separated"
-              @click="clickThrowDice"
-            >
-              Throw Dice
-            </button>
-            <button
-              v-if="isYourTime"
-              type="button"
-              class="btn btn-success separated"
-              @click="skip(uid)"
-            >
-              Skip
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-primary separated"
-              @click="() => showPayModal()"
-            >
-              Pay
-            </button>
-          </div>
+    <div
+      class="d-sm-flex d-md-none swipe right"
+      @click="() => toggleBoardTab('default')"
+    >
+      <span>>></span>
+    </div>
+    <div
+      v-touch:swipe.right="() => toggleBoardTab('cells')"
+      v-touch:swipe.left="() => toggleBoardTab('default')"
+      class="container board"
+    >
+      <dice-result
+        :dice-user-name="users[dice.uid] ? users[dice.uid].username : ''"
+        :dice-value="dice.value"
+        :double="throwUser.double"
+      />
+      <div class="row">
+        <div
+          ref="boardCells"
+          class="col-12 col-md-6 board-column cells"
+          :class="{ 'is-visible': tab === 'cells' }"
+        >
+          <board-cells
+            :users="joinedUsers"
+            :uid="uid"
+            :cells="boardCells"
+            :visited="visited"
+            @position-click="showPositionModal"
+            @scroll-to-icon="scrollToMyIcon"
+          />
+        </div>
+        <div
+          class="col-12 col-md-6 board-column default"
+          :class="{ 'is-visible': tab === 'default' }"
+        >
+          <user-status
+            :joined-users="joinedUsers"
+            :throw-uid="throwUser.uid"
+            :display-name="displayName"
+            :uid="uid"
+            @user-click="showPayModal"
+          />
+          <card-result :card="card" :is-your-time="isYourTime" />
+          <nuxt-link to="/" class="btn btn-secondary"
+            >Leave the board</nuxt-link
+          >
+          <history :history="history" :messages="messages" :users="users" />
         </div>
       </div>
+      <footer-buttons
+        :users="joinedUsers"
+        :uid="uid"
+        :is-your-time="isYourTime"
+        @pay-click="showPayModal"
+      />
+      <send-message-modal
+        :users="joinedUsers"
+        :meuid="uid"
+        :default-to-uid="payTo"
+        :is-owner="isOwner(uid)"
+      />
+      <change-position-modal
+        :users="joinedUsers"
+        :meuid="uid"
+        :default-to-uid="positionTo"
+        :cells="boardCells"
+        :is-owner="isOwner(uid)"
+      />
     </div>
-    <send-message-modal
-      :users="joinedUsers"
-      :meuid="uid"
-      :default-to-uid="payTo"
-      :is-owner="isOwner(uid)"
-    />
-    <change-position-modal
-      :users="joinedUsers"
-      :meuid="uid"
-      :default-to-uid="positionTo"
-      :cells="boardCells"
-      :is-owner="isOwner(uid)"
-    />
   </div>
 </template>
 
@@ -97,6 +88,7 @@ import CardResult from '~/components/board/CardResult.vue'
 import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
+import FooterButtons from '~/components/board/FooterButtons.vue'
 
 import SendMessageModal from '~/components/modal/SendMessageModal.vue'
 import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
@@ -113,7 +105,8 @@ export default Vue.extend({
     UserStatus,
     SendMessageModal,
     ChangePositionModal,
-    BoardCells
+    BoardCells,
+    FooterButtons
   },
   async asyncData({ params, redirect, store }) {
     const usersRef = boardsRef.doc(params.id).collection('users')
@@ -284,6 +277,31 @@ export default Vue.extend({
 body {
   overscroll-behavior-y: contain;
 }
+.wrapper > .swipe {
+  position: absolute;
+  display: none;
+  align-items: center;
+  width: 50vw;
+  top: 0;
+  bottom: 0;
+  padding: 0 30px;
+  span {
+    padding: 15px 0;
+    opacity: 0.75;
+    cursor: pointer;
+    &:hover {
+      opacity: 1;
+    }
+  }
+  &.left {
+    left: 0;
+    justify-content: flex-start;
+  }
+  &.right {
+    right: 0;
+    justify-content: flex-end;
+  }
+}
 .board {
   > .row {
     overflow-x: hidden;
@@ -350,21 +368,6 @@ body {
   }
   button.separated {
     margin-left: 1em;
-  }
-
-  .footer-item {
-    position: fixed;
-    z-index: 90;
-    bottom: 0;
-    left: 0;
-    height: 70px;
-    width: 100%;
-    background: #fff;
-    border-top: 2px solid #ccc;
-    padding: 15px 0;
-    .row:last-of-type {
-      margin-bottom: 0;
-    }
   }
 }
 
