@@ -128,24 +128,37 @@ export default Vue.extend({
     ).size
     const username = store.getters['auth/username']
     const uid = store.getters['auth/uid']
+    const me = await usersRef.doc(store.getters['auth/uid']).get()
     const fbPromises = []
-    fbPromises.push(
-      usersRef.doc(uid).set({
-        timestamp: {
-          joined: now,
-          updated: now,
-          left: new Date(0)
-        },
-        order: userCount + 1,
-        username,
-        cash: 1500,
-        position: 0,
-        auth: {
-          payment: false,
-          position: false
-        }
-      })
-    )
+    if (me.exists) {
+      fbPromises.push(
+        usersRef.doc(uid).set({
+          timestamp: {
+            joined: now,
+            updated: now,
+            left: new Date(0)
+          },
+          order: userCount + 1,
+          username,
+          cash: 1500,
+          position: 0,
+          auth: {
+            payment: false,
+            position: false
+          }
+        })
+      )
+    } else {
+      fbPromises.push(
+        usersRef.doc(uid).update({
+          timestamp: {
+            joined: now,
+            updated: now,
+            left: new Date(0)
+          }
+        })
+      )
+    }
     if (userCount === 0) {
       fbPromises.push(
         boardsRef.doc(params.id).update({
