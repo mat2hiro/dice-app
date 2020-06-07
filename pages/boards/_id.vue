@@ -129,8 +129,9 @@ export default Vue.extend({
     const username = store.getters['auth/username']
     const uid = store.getters['auth/uid']
     const me = await usersRef.doc(store.getters['auth/uid']).get()
+    console.log(me)
     const fbPromises = []
-    if (me.exists) {
+    if (!me.exists) {
       fbPromises.push(
         usersRef.doc(uid).set({
           timestamp: {
