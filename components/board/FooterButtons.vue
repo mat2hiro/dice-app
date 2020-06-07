@@ -8,7 +8,7 @@
               <input id="ui-open" class="d-none" type="checkbox" />
               <label for="ui-open" class="uiopen-label"> </label>
               <div class="user-icons">
-                <div class="container">
+                <div class="container d-flex">
                   <user-button
                     v-for="(user, key) in users"
                     :key="key"
