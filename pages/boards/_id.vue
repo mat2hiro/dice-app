@@ -30,7 +30,8 @@
         >
           <board-cells
             :users="joinedUsers"
-            :cells="boardCells"
+            :cells-data="boardCells"
+            :cells-detail="cells"
             :visited="visited"
             :has-auth="isOwner(uid) || me.auth.position"
             @position-click="showPositionModal"
@@ -50,9 +51,14 @@
             @pay-click="showPayModal"
           />
           <card-result :card="card" :is-your-time="isYourTime" />
-          <nuxt-link to="/" class="btn btn-secondary"
-            >Leave the board</nuxt-link
+          <nuxt-link to="/" class="btn btn-secondary">Leave</nuxt-link>
+          <button
+            v-if="isOwner(uid)"
+            class="btn btn-secondary"
+            @click="reset(uid)"
           >
+            Reset
+          </button>
           <history :history="history" :messages="messages" :users="users" />
         </div>
       </div>
@@ -63,18 +69,18 @@
       />
       <send-message-modal
         :users="joinedUsers"
-        :default-to-uid="modalTarget"
+        :default-to-uid="modalTarget.to"
         :has-auth="isOwner(uid) || me.auth.payment"
       />
       <change-position-modal
         :users="joinedUsers"
-        :default-to-uid="modalTarget"
+        :default-to-uid="modalTarget.to"
         :cells="boardCells"
         :has-auth="isOwner(uid) || me.auth.position"
       />
       <change-auth-modal
-        :user="joinedUsers[modalTarget]"
-        :to-uid="modalTarget"
+        :user="joinedUsers[modalTarget.to]"
+        :to-uid="modalTarget.to"
         :has-auth="isOwner(uid)"
       />
     </div>
@@ -129,7 +135,6 @@ export default Vue.extend({
     const username = store.getters['auth/username']
     const uid = store.getters['auth/uid']
     const me = await usersRef.doc(store.getters['auth/uid']).get()
-    console.log(me)
     const fbPromises = []
     if (!me.exists) {
       fbPromises.push(
@@ -145,7 +150,8 @@ export default Vue.extend({
           position: 0,
           auth: {
             payment: false,
-            position: false
+            position: false,
+            housing: false
           }
         })
       )
@@ -192,7 +198,7 @@ export default Vue.extend({
       usersRef: boardsRef.doc('any').collection('users'),
       displayName: '',
       randVal: [0, 16],
-      modalTarget: '',
+      modalTarget: {},
       boardCells: boardCellsData,
       visited: true,
       myPosition: 0,
@@ -209,6 +215,7 @@ export default Vue.extend({
       'users',
       'history',
       'messages',
+      'cells',
       'card'
     ]),
     ...mapState('auth', ['uid', 'username']),
@@ -263,6 +270,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('board', [
       'clear',
+      'reset',
       'throwDice',
       'skip',
       'drawCard',
@@ -283,19 +291,19 @@ export default Vue.extend({
       this.visited = this.tab === 'cells'
     },
     showPayModal(uid = 'bank') {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-send-message')
       })
     },
     showPositionModal(uid) {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-position')
       })
     },
     showAuthModal(uid) {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-auth')
       })

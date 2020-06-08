@@ -1,11 +1,11 @@
 <template>
   <div>
     <div
-      v-for="(cell, idx) in cells"
+      v-for="(cell, idx) in cellsData"
       :key="idx"
       class="cell"
       :class="{
-        'is-here': uid in positionedUsers(idx) && !visited
+        'is-here': isHere(uid, idx) && !visited
       }"
     >
       <div class="row align-items-center">
@@ -13,7 +13,7 @@
           class="col-5 d-flex usericon-container"
           name="icon"
           tag="div"
-          @after-enter="() => emitScroll(uid in positionedUsers(idx))"
+          @after-enter="() => emitScroll(isHere(uid, idx))"
         >
           <user-button
             v-for="key in positionedUsers(idx)"
@@ -24,9 +24,21 @@
             :on-click="(e) => openPositionModal(e, key)"
           />
         </transition-group>
-        <div class="col-7 d-relative cell-name">
-          <span class="color-tag" :style="cellColor(cell)"></span>
-          {{ cell.name }}
+        <div class="col-7 d-relative cell-view-wrapper">
+          <div class="cell-view">
+            <span class="color-tag" :style="cellColor(cell)"></span>
+            <div class="cell-name" @click="openCellDetailModal(idx)">
+              {{ cell.name }}
+            </div>
+            <button
+              v-if="isHere(uid, idx)"
+              class="btn btn-success"
+              :class="{ 'btn-warning': isHere(uid, idx) === 'pay' }"
+              @click.stop.prevent.once="buyCell(uid, idx)"
+            >
+              ${{ cell.price }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -36,7 +48,7 @@
 <script lang="ts">
 import crypto from 'crypto'
 import Vue from 'vue'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
 import { cellColorsData } from '~/static/ts/monopoly-cells.ts'
@@ -45,7 +57,7 @@ export default Vue.extend({
   components: {
     UserButton
   },
-  props: ['users', 'cells', 'visited', 'hasAuth'],
+  props: ['users', 'cellsData', 'cellsDetail', 'visited', 'hasAuth'],
   data() {
     return {
       cellColors: cellColorsData
@@ -63,6 +75,15 @@ export default Vue.extend({
         }, {})
       }
     },
+    isHere() {
+      return (uid, idx) => {
+        if (!(uid in this.positionedUsers(idx))) return ''
+        const cellData = this.cellsData[idx] || {}
+        if (cellData.type !== 0) return 'pay'
+        const cellDetail = this.cellsDetail[idx] || {}
+        return !cellDetail.owner ? 'buy' : cellDetail.owner !== uid ? 'pay' : ''
+      }
+    },
     cellColor() {
       return (cell) => ({
         background: cellColorsData[cell.color_group]
@@ -70,6 +91,25 @@ export default Vue.extend({
     }
   },
   methods: {
+    ...mapActions('board', ['sendMessage', 'setCell']),
+    async buyCell(uid, cellIdx) {
+      const isHere = this.isHere(uid, cellIdx)
+      const cell = this.cellsData[cellIdx] || {}
+      const promises = []
+      if (isHere === 'buy') {
+        promises.push(this.setCell({ uid, idx: cellIdx }))
+      }
+      promises.push(
+        this.sendMessage({
+          from: uid,
+          to: isHere === 'pay' ? this.cellsDetail[cellIdx].owner : '',
+          timestamp: { created: new Date() },
+          cash: +cell.price,
+          message: `${isHere} ${cell.name}`
+        })
+      )
+      await Promise.all(promises)
+    },
     openPositionModal(ev, uid) {
       if (!this.hasAuth) {
         ev.target.blur()
@@ -77,6 +117,7 @@ export default Vue.extend({
       }
       this.$emit('position-click', uid)
     },
+    openCellDetailModal(cellIdx) {},
     emitScroll(isHere = false) {
       if (!isHere) return
       this.$emit('scroll-to-icon')
@@ -108,13 +149,34 @@ export default Vue.extend({
     height: 100%;
     background: #fff;
   }
+  &-view-wrapper {
+    padding-left: 0;
+  }
+  &-view {
+    padding-left: 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    &:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+    button.btn {
+      font-size: inherit;
+      margin-left: auto;
+    }
+  }
+  &-name {
+    overflow-x: overlay;
+    white-space: nowrap;
+  }
   @media (max-width: 959px) {
     .usericon-container .user-icon {
       width: 22px;
       height: 22px;
       font-size: 15px;
     }
-    .cell-name {
+    .cell-view {
       font-size: 15px;
     }
   }
@@ -125,7 +187,7 @@ export default Vue.extend({
       width: 6.4vw;
       height: 6.4vw;
     }
-    .cell-name {
+    .cell-view {
       font-size: 4vw;
     }
   }

@@ -8,7 +8,8 @@ import {
   IMessage,
   FDate,
   ITime,
-  IBoard
+  IBoard,
+  ICell
 } from '../type'
 import firebase from '~/plugins/firebase'
 
@@ -29,6 +30,7 @@ interface State<Dt> {
   unsubscribe: Function[]
   history: IDice<Dt>[]
   messages: IMessage<Dt>[]
+  cells: ICell<Dt>[]
 }
 
 interface IState extends State<Date> {}
@@ -46,9 +48,10 @@ export const state = (): IState => ({
   },
   card: { from: 0, to: 16, value: '0' },
   throwUser: { uid: '', double: 0 },
-  unsubscribe: [] as any[],
-  history: [] as any[],
-  messages: [] as any[]
+  unsubscribe: [] as Function[],
+  history: [] as IDice<Date>[],
+  messages: [] as IMessage<Date>[],
+  cells: [] as ICell<Date>[]
 })
 
 // export type BoardModuleState = ReturnType<typeof state>
@@ -72,6 +75,7 @@ export const mutations: MutationTree<IState> = {
     state.throwUser = { uid: '', double: 0 }
     state.history = []
     state.messages = []
+    state.cells = []
   },
   set(state, setState: FState) {
     state.id = setState.id || state.id
@@ -99,6 +103,12 @@ export const mutations: MutationTree<IState> = {
     const ts: ITime<Date> = {}
     if (timestamp.created) ts.created = timestamp.created.toDate()
     state.messages.unshift({ ...message, timestamp: ts } as IMessage<Date>)
+  },
+  setC(state, { cell, idx }: { cell: ICell<FDate>; idx: number }) {
+    const timestamp: ITime<FDate> = cell.timestamp || {}
+    const ts: ITime<Date> = {}
+    if (timestamp.updated) ts.updated = timestamp.updated.toDate()
+    Vue.set(state.cells, idx, { ...cell, timestamp: ts } as ICell<Date>)
   },
   pushHistory(state, dice: IDice<FDate>) {
     if (dice.time.toMillis() === state.dice.time.getTime()) return
@@ -151,6 +161,41 @@ interface PDice {
 export const actions: ActionTree<IState, IState> = {
   clear({ commit }, id: string) {
     commit('init', id)
+  },
+  reset: async ({ state, getters }, uid) => {
+    const boardRef = boardsRef.doc(state.id)
+    const [cells, users] = await Promise.all([
+      boardRef.collection('cells').get(),
+      boardRef.collection('users').get()
+    ])
+    const batch = firebase.firestore().batch()
+    const now = new Date()
+    cells.docs.forEach((doc) => {
+      batch.set(doc.ref, { owner: '', house: 0 })
+    })
+    users.docs.forEach((doc, idx) => {
+      batch.update(doc.ref, {
+        auth: {
+          payment: false,
+          position: false,
+          housing: false
+        },
+        cash: 1500,
+        position: 0
+      })
+    })
+    await Promise.all([
+      boardRef.update({
+        dice: {
+          value: [],
+          uid,
+          time: new Date()
+        },
+        throwUser: { uid, double: 0 },
+        'timestamp.updated': now
+      }),
+      batch.commit()
+    ])
   },
   throwDice: async (
     { state, getters },
@@ -249,6 +294,8 @@ export const actions: ActionTree<IState, IState> = {
         )
       }
       if (message.to) {
+        console.log(message)
+        console.log(state.users[message.from])
         messagePromises.push(
           boardsRef
             .doc(state.id)
@@ -278,6 +325,16 @@ export const actions: ActionTree<IState, IState> = {
       .doc(uid)
       .update({
         ...user,
+        'timestamp.updated': new Date()
+      })
+  },
+  setCell: async ({ state }, { uid, idx }: { uid: string; idx: number }) => {
+    await boardsRef
+      .doc(state.id)
+      .collection('cells')
+      .doc('' + idx)
+      .update({
+        owner: uid,
         'timestamp.updated': new Date()
       })
   },
@@ -329,10 +386,21 @@ export const actions: ActionTree<IState, IState> = {
         })
       })
 
+    const unsubscribeCell = boardsRef
+      .doc(state.id)
+      .collection('cells')
+      .onSnapshot((snap) => {
+        snap.docChanges().forEach((change) => {
+          const cell: Partial<ICell<FDate>> = change.doc.data()
+          commit('setC', { cell, idx: change.doc.id })
+        })
+      })
+
     commit('unsubscribe', [
       unsubscribeThis,
       unsubscribeUser,
-      unsubscribeMessage
+      unsubscribeMessage,
+      unsubscribeCell
     ])
   },
   stopListener({ commit }) {

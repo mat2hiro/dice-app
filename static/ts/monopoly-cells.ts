@@ -64,7 +64,7 @@ export const boardCellsData = [
   {
     name: '所得税',
     type: 1,
-    get_money: -200
+    price: 200
   },
   {
     name: 'リーディング鉄道',

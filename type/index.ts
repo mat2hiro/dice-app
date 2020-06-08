@@ -55,3 +55,9 @@ export interface IMessage<Dt> {
   message: string
   timestamp: ITime<Dt>
 }
+
+export interface ICell<Dt> {
+  owner: string
+  house: number
+  timestamp: ITime<Dt>
+}
