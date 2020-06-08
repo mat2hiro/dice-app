@@ -106,6 +106,7 @@ export default Vue.extend({
     left: 0;
     width: 5px;
     height: 100%;
+    background: #fff;
   }
   @media (max-width: 959px) {
     .usericon-container .user-icon {

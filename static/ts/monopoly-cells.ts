@@ -50,6 +50,7 @@ export const boardCellsData = [
   {
     name: '共同基金',
     type: 2,
+    // color_group: 9,
     card_group: 0
   },
   {
@@ -83,6 +84,7 @@ export const boardCellsData = [
   {
     name: 'チャンス',
     type: 2,
+    // color_group: 10,
     card_group: 1
   },
   {
@@ -116,6 +118,7 @@ export const boardCellsData = [
   {
     name: '電力会社',
     type: 1,
+    color_group: 11,
     is_power_company: true,
     rent: [4, 10]
   },
@@ -153,6 +156,7 @@ export const boardCellsData = [
   {
     name: '共同基金',
     type: 2,
+    // color_group: 9,
     card_group: 0
   },
   {
@@ -187,6 +191,7 @@ export const boardCellsData = [
   {
     name: 'チャンス',
     type: 2,
+    // color_group: 10,
     card_group: 1
   },
   {
@@ -231,6 +236,7 @@ export const boardCellsData = [
   {
     name: '水道会社',
     type: 0,
+    color_group: 11,
     is_power_company: true,
     rent: [4, 10]
   },
@@ -245,6 +251,7 @@ export const boardCellsData = [
   {
     name: 'GO TO JAIL',
     type: 4
+    // color_group: 12
   },
   {
     name: 'パシフィック通り',
@@ -265,6 +272,7 @@ export const boardCellsData = [
   {
     name: '共同基金',
     type: 1,
+    // color_group: 9,
     card_group: 0
   },
   {
@@ -285,6 +293,7 @@ export const boardCellsData = [
   {
     name: 'チャンス',
     type: 1,
+    // color_group: 10,
     card_group: 1
   },
   {
@@ -311,7 +320,7 @@ export const boardCellsData = [
 ]
 
 export const cellColorsData = {
-  0: '#ccc',
+  0: '#cccccc',
   1: '#b45f06',
   2: '#00eeee',
   3: '#ee00ee',
@@ -319,5 +328,9 @@ export const cellColorsData = {
   5: '#ee0000',
   6: '#eeee00',
   7: '#00ee00',
-  8: '#7ba7d7'
+  8: '#7ba7d7',
+  9: '#ead1dc',
+  10: '#c9daf8',
+  11: '#e0d0a0',
+  12: '#000000'
 }

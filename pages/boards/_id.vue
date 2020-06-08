@@ -152,6 +152,7 @@ export default Vue.extend({
     } else {
       fbPromises.push(
         usersRef.doc(uid).update({
+          username,
           timestamp: {
             joined: now,
             updated: now,
@@ -349,6 +350,7 @@ body {
     overflow-y: auto;
     scroll-behavior: smooth;
     &.cells {
+      background: #fafdf6;
       margin-top: 0;
       max-height: calc(100vh - 130px);
     }
