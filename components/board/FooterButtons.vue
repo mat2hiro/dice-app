@@ -22,7 +22,7 @@
             <button
               v-if="isYourTime"
               type="buttton"
-              class="btn btn-primary ml-auto"
+              class="btn btn-primary separated"
               @click="clickThrowDice"
             >
               Throw Dice
@@ -99,6 +99,9 @@ export default Vue.extend({
   }
   .diceButtons {
     position: static;
+    button.separated:first-of-type {
+      margin-left: auto;
+    }
   }
 }
 .user-icons {

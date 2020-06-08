@@ -208,6 +208,7 @@ export const boardCellsData = [
   {
     name: 'B&O鉄道',
     type: 0,
+    color_group: 0,
     is_power_company: false,
     rent: [25, 50, 100, 200]
   },
@@ -277,6 +278,7 @@ export const boardCellsData = [
   {
     name: 'ショートライン鉄道',
     type: 0,
+    color_group: 0,
     is_power_company: false,
     rent: [25, 50, 100, 200]
   },
@@ -307,3 +309,15 @@ export const boardCellsData = [
     build_price: 200
   }
 ]
+
+export const cellColorsData = {
+  0: '#ccc',
+  1: '#b45f06',
+  2: '#00eeee',
+  3: '#ee00ee',
+  4: '#ee9900',
+  5: '#ee0000',
+  6: '#eeee00',
+  7: '#00ee00',
+  8: '#7ba7d7'
+}

@@ -24,7 +24,8 @@
             :on-click="(e) => openPositionModal(e, key)"
           />
         </transition-group>
-        <div class="col-7 cell-name">
+        <div class="col-7 d-relative cell-name">
+          <span class="color-tag" :style="cellColor(cell)"></span>
           {{ cell.name }}
         </div>
       </div>
@@ -38,12 +39,18 @@ import Vue from 'vue'
 import { mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
+import { cellColorsData } from '~/static/ts/monopoly-cells.ts'
 
 export default Vue.extend({
   components: {
     UserButton
   },
   props: ['users', 'cells', 'visited', 'hasAuth'],
+  data() {
+    return {
+      cellColors: cellColorsData
+    }
+  },
   computed: {
     ...mapGetters('auth', ['uid']),
     positionedUsers() {
@@ -55,6 +62,11 @@ export default Vue.extend({
           return pre
         }, {})
       }
+    },
+    cellColor() {
+      return (cell) => ({
+        background: cellColorsData[cell.color_group]
+      })
     }
   },
   methods: {
@@ -88,6 +100,12 @@ export default Vue.extend({
   }
   .usericon-container {
     flex-wrap: wrap;
+  }
+  .color-tag {
+    position: absolute;
+    left: 0;
+    width: 5px;
+    height: 100%;
   }
   @media (max-width: 959px) {
     .usericon-container .user-icon {
