@@ -30,11 +30,11 @@
         >
           <board-cells
             :users="joinedUsers"
-            :cells-data="boardCells"
-            :cells-detail="cells"
+            :cells="cells"
             :visited="visited"
             :has-auth="isOwner(uid) || me.auth.position"
             @position-click="showPositionModal"
+            @cell-click="showCellDetailModal"
             @scroll-to-icon="scrollToMyIcon"
           />
         </div>
@@ -75,13 +75,19 @@
       <change-position-modal
         :users="joinedUsers"
         :default-to-uid="modalTarget.to"
-        :cells="boardCells"
+        :cells="cells"
         :has-auth="isOwner(uid) || me.auth.position"
       />
       <change-auth-modal
         :user="joinedUsers[modalTarget.to]"
         :to-uid="modalTarget.to"
         :has-auth="isOwner(uid)"
+      />
+      <cell-detail-modal
+        :users="joinedUsers"
+        :cells="cells"
+        :cell-idx="modalTarget.cellIdx"
+        :has-auth="isOwner(uid) || me.auth.cell"
       />
     </div>
   </div>
@@ -99,11 +105,10 @@ import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
 import FooterButtons from '~/components/board/FooterButtons.vue'
 
-import SendMessageModal from '~/components/modal/SendMessageModal.vue'
-import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
-import ChangeAuthModal from '~/components/modal/ChangeAuthModal.vue'
-
-import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
+import SendMessageModal from '~/components/modal/SendMessage.vue'
+import ChangePositionModal from '~/components/modal/ChangePosition.vue'
+import ChangeAuthModal from '~/components/modal/ChangeAuth.vue'
+import CellDetailModal from '~/components/modal/CellDetail.vue'
 
 const boardsRef = firebase.firestore().collection('boards')
 
@@ -116,6 +121,7 @@ export default Vue.extend({
     SendMessageModal,
     ChangePositionModal,
     ChangeAuthModal,
+    CellDetailModal,
     BoardCells,
     FooterButtons
   },
@@ -199,7 +205,6 @@ export default Vue.extend({
       displayName: '',
       randVal: [0, 16],
       modalTarget: {},
-      boardCells: boardCellsData,
       visited: true,
       myPosition: 0,
       tab: 'default',
@@ -306,6 +311,12 @@ export default Vue.extend({
       this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-auth')
+      })
+    },
+    showCellDetailModal(cellIdx) {
+      this.modalTarget = { cellIdx }
+      this.$nextTick(() => {
+        this.$bvModal.show('modal-cell-detail')
       })
     },
     async clickThrowDice() {

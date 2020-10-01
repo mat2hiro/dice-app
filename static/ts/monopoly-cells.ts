@@ -117,7 +117,7 @@ export const boardCellsData = [
   },
   {
     name: '電力会社',
-    type: 1,
+    type: 0,
     color_group: 11,
     is_power_company: true,
     rent: [4, 10]

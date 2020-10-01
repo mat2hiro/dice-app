@@ -84,13 +84,18 @@ export default Vue.extend({
           owner: this.uid
         })
         await Promise.all(
-          boardCellsData.map((_, idx) =>
+          boardCellsData.map((cell, idx) =>
             db
               .collection('boards')
               .doc(addedRef.id)
               .collection('cells')
               .doc('' + idx)
-              .set({ owner: '', house: 0, timestamp: { updated: now } })
+              .set({
+                ...cell,
+                owner: '',
+                house: 0,
+                timestamp: { updated: now }
+              })
           )
         )
         this.$router.push(`/boards/${addedRef.id}`)

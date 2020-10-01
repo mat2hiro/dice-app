@@ -198,7 +198,7 @@ export const actions: ActionTree<IState, IState> = {
     ])
   },
   throwDice: async (
-    { state, getters },
+    { state, getters, dispatch },
     { uid, dice }: { uid: string; dice: PDice }
   ) => {
     const diceProps = dice || { min: 1, max: 6, amount: 2 }
@@ -211,12 +211,18 @@ export const actions: ActionTree<IState, IState> = {
       )
     const isDouble = diceRoll.every((val) => val === diceRoll[0])
     const nextuid: string = isDouble ? uid : getters.nextUserId(uid)
-    await Promise.all([
+    const nextPosition =
+      state.users[uid].position +
+      diceRoll.reduce((p, v) => {
+        return p + v
+      }, 0)
+    const now = new Date()
+    const promises = [
       boardsRef.doc(state.id).update({
         dice: {
           value: diceRoll,
           uid,
-          time: new Date()
+          time: now
         },
         throwUser: {
           uid: nextuid,
@@ -228,15 +234,22 @@ export const actions: ActionTree<IState, IState> = {
         .collection('users')
         .doc(uid)
         .update({
-          'timestamp.updated': new Date(),
-          position:
-            (state.users[uid].position +
-              diceRoll.reduce((p, v) => {
-                return p + v
-              }, 0)) %
-            40
+          'timestamp.updated': now,
+          position: nextPosition % 40
         })
-    ])
+    ]
+    if (nextPosition >= 40) {
+      promises.push(
+        dispatch('sendMessage', {
+          from: '',
+          to: uid,
+          timestamp: { created: now },
+          cash: 200,
+          message: 'Got salary.'
+        })
+      )
+    }
+    await Promise.all(promises)
   },
   skip: async ({ state, getters }, uid: string) => {
     const nextuid: string = getters.nextUserId(uid)
@@ -294,8 +307,6 @@ export const actions: ActionTree<IState, IState> = {
         )
       }
       if (message.to) {
-        console.log(message)
-        console.log(state.users[message.from])
         messagePromises.push(
           boardsRef
             .doc(state.id)
@@ -328,13 +339,13 @@ export const actions: ActionTree<IState, IState> = {
         'timestamp.updated': new Date()
       })
   },
-  setCell: async ({ state }, { uid, idx }: { uid: string; idx: number }) => {
+  setCell: async ({ state }, { idx, cell }: { idx: number; cell: any }) => {
     await boardsRef
       .doc(state.id)
       .collection('cells')
       .doc('' + idx)
       .update({
-        owner: uid,
+        ...cell,
         'timestamp.updated': new Date()
       })
   },

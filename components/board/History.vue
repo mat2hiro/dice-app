@@ -42,12 +42,14 @@
           class="row history-row"
         >
           <div class="col-12 history-item">
-            {{ message.time ? displayTime(message.time) : 'Bank' }}
+            {{ displayTime(message.timestamp.created) }}
             |
             {{ users[message.from] ? users[message.from].username : 'Bank' }} ->
             {{ users[message.to] ? users[message.to].username : 'Bank' }}
             ::
             <span>{{ message.cash }}</span>
+            <br />
+            <span>{{ message.message }}</span>
           </div>
         </div>
       </div>

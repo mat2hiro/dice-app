@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-for="(cell, idx) in cellsData"
+      v-for="(cell, idx) in cells"
       :key="idx"
       class="cell"
       :class="{
@@ -25,19 +25,27 @@
           />
         </transition-group>
         <div class="col-7 d-relative cell-view-wrapper">
-          <div class="cell-view">
+          <div class="cell-view" @click="openCellDetailModal(idx)">
             <span class="color-tag" :style="cellColor(cell)"></span>
-            <div class="cell-name" @click="openCellDetailModal(idx)">
+            <div class="cell-name">
               {{ cell.name }}
             </div>
-            <button
-              v-if="isHere(uid, idx)"
-              class="btn btn-success"
-              :class="{ 'btn-warning': isHere(uid, idx) === 'pay' }"
-              @click.stop.prevent.once="buyCell(uid, idx)"
-            >
-              ${{ cell.price }}
-            </button>
+            <template v-if="isHere(uid, idx)">
+              <button
+                v-if="cell.type === 0 && !cell.owner"
+                class="btn btn-success"
+                @click.stop.prevent.once="buyCell(uid, idx)"
+              >
+                ${{ cell.price }}
+              </button>
+              <button
+                v-else-if="rentPrice(uid, cell)"
+                class="btn btn-warning"
+                @click.stop.prevent.once="payForRent(uid, cell)"
+              >
+                ${{ rentPrice(uid, cell) }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
@@ -57,7 +65,7 @@ export default Vue.extend({
   components: {
     UserButton
   },
-  props: ['users', 'cellsData', 'cellsDetail', 'visited', 'hasAuth'],
+  props: ['users', 'cells', 'visited', 'hasAuth'],
   data() {
     return {
       cellColors: cellColorsData
@@ -78,9 +86,9 @@ export default Vue.extend({
     isHere() {
       return (uid, idx) => {
         if (!(uid in this.positionedUsers(idx))) return ''
-        const cellData = this.cellsData[idx] || {}
+        const cellData = this.cells[idx] || {}
         if (cellData.type !== 0) return 'pay'
-        const cellDetail = this.cellsDetail[idx] || {}
+        const cellDetail = this.cells[idx] || {}
         return !cellDetail.owner ? 'buy' : cellDetail.owner !== uid ? 'pay' : ''
       }
     },
@@ -88,27 +96,44 @@ export default Vue.extend({
       return (cell) => ({
         background: cellColorsData[cell.color_group]
       })
+    },
+    rentPrice() {
+      return (uid, cell) =>
+        cell.type !== 0 || !cell.owner || cell.house < 0 || cell.owner === uid
+          ? 0
+          : cell.rent[cell.house] *
+            (1 + (cell.house === 0 && this.isMonopoly(cell)))
+    },
+    isMonopoly() {
+      return (cell) =>
+        this.cells
+          .filter((c) => c.type === 0 && c.color_group === cell.color_group)
+          .every((c) => c.owner === cell.owner)
     }
   },
   methods: {
     ...mapActions('board', ['sendMessage', 'setCell']),
+    async payForRent(uid, cell) {
+      await this.sendMessage({
+        from: uid,
+        to: cell.owner,
+        timestamp: { created: new Date() },
+        cash: this.rentPrice(uid, cell),
+        message: `Pay for ${cell.name}'s rent price.`
+      })
+    },
     async buyCell(uid, cellIdx) {
-      const isHere = this.isHere(uid, cellIdx)
-      const cell = this.cellsData[cellIdx] || {}
-      const promises = []
-      if (isHere === 'buy') {
-        promises.push(this.setCell({ uid, idx: cellIdx }))
-      }
-      promises.push(
+      const cell = this.cells[cellIdx] || {}
+      await Promise.all([
+        this.setCell({ idx: cellIdx, cell: { owner: uid } }),
         this.sendMessage({
           from: uid,
-          to: isHere === 'pay' ? this.cellsDetail[cellIdx].owner : '',
+          to: '',
           timestamp: { created: new Date() },
           cash: +cell.price,
-          message: `${isHere} ${cell.name}`
+          message: `Buy ${cell.name}`
         })
-      )
-      await Promise.all(promises)
+      ])
     },
     openPositionModal(ev, uid) {
       if (!this.hasAuth) {
@@ -117,7 +142,9 @@ export default Vue.extend({
       }
       this.$emit('position-click', uid)
     },
-    openCellDetailModal(cellIdx) {},
+    openCellDetailModal(cellIdx) {
+      this.$emit('cell-click', cellIdx)
+    },
     emitScroll(isHere = false) {
       if (!isHere) return
       this.$emit('scroll-to-icon')
