@@ -9,6 +9,16 @@
         mortage: cell.house < 0
       }"
     >
+      <div
+        v-if="cell.owner"
+        class="own-icon"
+        :class="`house-${cell.house}`"
+        :style="iconBg(uid)"
+      >
+        <div class="houses">
+          <span v-for="i of cell.house" :key="i" :style="iconHouse(uid)"></span>
+        </div>
+      </div>
       <div class="row align-items-center">
         <transition-group
           class="col-5 d-flex usericon-container"
@@ -60,6 +70,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
+import { userColor } from '~/services'
 import { cellColorsData } from '~/static/ts/monopoly-cells.ts'
 
 export default Vue.extend({
@@ -74,6 +85,22 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters('auth', ['uid']),
+    iconBg() {
+      return (uid) => {
+        const col = userColor(uid)
+        return {
+          'border-color': `transparent ${col.background} transparent transparent`,
+          color: col.color
+        }
+      }
+    },
+    iconHouse() {
+      return (uid) => {
+        return {
+          'background-color': userColor(uid).color
+        }
+      }
+    },
     positionedUsers() {
       return (idx) => {
         return Object.keys(this.users).reduce((pre, k) => {
@@ -185,6 +212,7 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .cell {
+  position: relative;
   padding: 10px 0;
   border-bottom: 1px solid #eee;
   @media (max-width: 767px) {
@@ -195,6 +223,111 @@ export default Vue.extend({
   }
   &.mortage {
     background: #a5a5a5;
+  }
+  .own-icon {
+    position: absolute;
+    height: 1.5em;
+    width: 1.5em;
+    top: 0;
+    right: 0;
+
+    border-style: solid;
+    border-width: 0 1.5em 1.5em 0;
+
+    text-align: right;
+
+    .houses {
+      position: relative;
+      width: 1.5em;
+      height: 1.5em;
+
+      span {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+      }
+    }
+
+    .houses span {
+      &:nth-child(1) {
+        top: 0.05em;
+        right: 0.05em;
+      }
+      &:nth-child(2) {
+        top: 0.05em;
+        right: 0.35em;
+      }
+      &:nth-child(3) {
+        top: 0.35em;
+        right: 0.05em;
+      }
+      &:nth-child(4) {
+        top: 0.35em;
+        right: 0.35em;
+      }
+      &:nth-child(5) {
+        width: 10px;
+        height: 10px;
+        top: 0.05em;
+        right: 0.05em;
+      }
+    }
+
+    // &.house-1 {
+    //   .houses span {
+    //     top: 0.2em;
+    //     right: 0.2em;
+    //   }
+    // }
+    // &.house-2 {
+    //   .houses span {
+    //     &:nth-child(1) {
+    //       top: 0.05em;
+    //       right: 0.35em;
+    //     }
+    //     &:nth-child(2) {
+    //       top: 0.35em;
+    //       right: 0.05em;
+    //     }
+    //   }
+    // }
+    // &.house-3 {
+    //   .houses span {
+    //     &:nth-child(1) {
+    //       top: 0.35em;
+    //       right: 0.35em;
+    //     }
+    //     &:nth-child(2) {
+    //       top: 0.05em;
+    //       right: 0.35em;
+    //     }
+    //     &:nth-child(3) {
+    //       top: 0.35em;
+    //       right: 0.05em;
+    //     }
+    //   }
+    // }
+    // &.house-4 {
+    //   .houses span {
+    //     &:nth-child(1) {
+    //       top: 0.35em;
+    //       right: 0.35em;
+    //     }
+    //     &:nth-child(2) {
+    //       top: 0.05em;
+    //       right: 0.35em;
+    //     }
+    //     &:nth-child(3) {
+    //       top: 0.35em;
+    //       right: 0.05em;
+    //     }
+    //     &:nth-child(4) {
+    //       top: 0.05em;
+    //       right: 0.05em;
+    //     }
+    //   }
+    // }
   }
   .row {
     margin-bottom: 0 !important;
