@@ -89,7 +89,7 @@
         :users="joinedUsers"
         :cells="cells"
         :cell-idx="modalTarget.cellIdx"
-        :has-auth="isOwner(uid) || me.auth.cell"
+        :has-auth="isOwner(uid) || me.auth.housing"
       />
     </div>
   </div>

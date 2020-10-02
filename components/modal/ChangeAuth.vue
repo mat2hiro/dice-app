@@ -34,6 +34,21 @@
           </div>
         </div>
       </div>
+      <div class="row align-items-center">
+        <span class="col-6">
+          Housing:
+        </span>
+        <div class="col-6">
+          <div class="form-check">
+            <input
+              v-model="auth.housing"
+              type="checkbox"
+              class="form-check-input position-static"
+              :disabled="!hasAuth"
+            />
+          </div>
+        </div>
+      </div>
     </form>
     <template v-slot:modal-ok>
       Update
@@ -50,8 +65,10 @@ export default Vue.extend({
   data: () => ({
     auth: {
       payment: false,
-      position: false
-    }
+      position: false,
+      housing: false
+    },
+    isLoading: false
   }),
   methods: {
     ...mapActions('board', ['setUser']),
@@ -67,10 +84,13 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
+      if (this.isLoading) return
+      this.isLoading = true
       await this.setUser({
         uid: this.toUid,
         user: { auth: this.auth }
-      })
+      }).catch(console.error)
+      this.isLoading = false
       this.$bvModal.hide('modal-change-auth')
     }
   }

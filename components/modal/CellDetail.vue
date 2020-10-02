@@ -122,7 +122,8 @@ export default Vue.extend({
   props: ['users', 'cells', 'cellIdx', 'hasAuth'],
   data: () => ({
     house: 0,
-    ownerId: ''
+    ownerId: '',
+    isLoading: false
   }),
   computed: {
     ...mapGetters('auth', ['uid']),
@@ -224,6 +225,8 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
+      if (this.isLoading) return
+      this.isLoading = true
       if (this.isChangeOwner || this.cashToPay !== 0) {
         const promises = []
         const nextOwner =
@@ -247,8 +250,9 @@ export default Vue.extend({
             this.setCell({ idx: this.cellIdx, cell: { owner: nextOwner } })
           )
         }
-        await Promise.all(promises)
+        await Promise.all(promises).catch(console.error)
       }
+      this.isLoading = false
       this.$nextTick(() => {
         this.$bvModal.hide('modal-cell-detail')
       })

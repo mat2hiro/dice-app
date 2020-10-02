@@ -10,6 +10,7 @@ export interface ITime<Dt> {
 interface IAuth {
   payment: boolean
   position: boolean
+  housing: boolean
 }
 
 export interface IUser<Dt> {
