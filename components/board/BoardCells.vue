@@ -5,7 +5,8 @@
       :key="idx"
       class="cell"
       :class="{
-        'is-here': isHere(uid, idx) && !visited
+        'is-here': isHere(uid, idx) && !visited,
+        mortage: cell.house < 0
       }"
     >
       <div class="row align-items-center">
@@ -65,7 +66,7 @@ export default Vue.extend({
   components: {
     UserButton
   },
-  props: ['users', 'cells', 'visited', 'hasAuth'],
+  props: ['users', 'cells', 'visited', 'dice', 'hasAuth'],
   data() {
     return {
       cellColors: cellColorsData
@@ -98,17 +99,46 @@ export default Vue.extend({
       })
     },
     rentPrice() {
-      return (uid, cell) =>
-        cell.type !== 0 || !cell.owner || cell.house < 0 || cell.owner === uid
-          ? 0
-          : cell.rent[cell.house] *
+      return (uid, cell) => {
+        if (
+          cell.type !== 0 ||
+          cell.house < 0 ||
+          !cell.owner ||
+          cell.owner === uid
+        ) {
+          return 0
+        }
+        if (cell.infra === 1) {
+          return cell.rent[this.numPossession(cell) - 1]
+        } else if (cell.infra === 2) {
+          return (
+            cell.rent[this.numPossession(cell) - 1] *
+            this.dice.reduce((p, v) => p + v, 0)
+          )
+        } else {
+          return (
+            cell.rent[cell.house] *
             (1 + (cell.house === 0 && this.isMonopoly(cell)))
+          )
+        }
+      }
+    },
+    sameColorCell() {
+      return (cell) =>
+        this.cells
+          ? this.cells.filter(
+              (c) => c.type === 0 && c.color_group === cell.color_group
+            )
+          : []
+    },
+    numPossession() {
+      return (cell) =>
+        this.sameColorCell(cell).filter((c) => c.owner === cell.owner).length
     },
     isMonopoly() {
       return (cell) =>
-        this.cells
-          .filter((c) => c.type === 0 && c.color_group === cell.color_group)
-          .every((c) => c.owner === cell.owner)
+        !!cell.owner &&
+        this.sameColorCell(cell).every((c) => c.owner === cell.owner)
     }
   },
   methods: {
@@ -162,6 +192,9 @@ export default Vue.extend({
     &.is-here {
       background-color: #17a2b8;
     }
+  }
+  &.mortage {
+    background: #a5a5a5;
   }
   .row {
     margin-bottom: 0 !important;

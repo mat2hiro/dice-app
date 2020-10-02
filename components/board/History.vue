@@ -25,10 +25,14 @@
           :key="hist.time.getTime()"
           class="row history-row"
         >
-          <div class="col-12 history-item">
-            {{ hist.time ? displayTime(hist.time) : '' }}
-            | {{ users[hist.uid] ? users[hist.uid].username : '' }} ::
-            <span>{{ hist.value.join(', ') }}</span>
+          <div class="col-12 history-item d-flex">
+            <span class="time">
+              {{ hist.time ? displayTime(hist.time) : '' }} |
+            </span>
+            <span class="msg">
+              {{ users[hist.uid] ? users[hist.uid].username : '' }} ::
+              <span class="text-nowrap">{{ hist.value.join(', ') }}</span>
+            </span>
           </div>
         </div>
       </div>
@@ -41,15 +45,19 @@
           :key="message.timestamp.created.getTime()"
           class="row history-row"
         >
-          <div class="col-12 history-item">
-            {{ displayTime(message.timestamp.created) }}
-            |
-            {{ users[message.from] ? users[message.from].username : 'Bank' }} ->
-            {{ users[message.to] ? users[message.to].username : 'Bank' }}
-            ::
-            <span>{{ message.cash }}</span>
-            <br />
-            <span>{{ message.message }}</span>
+          <div class="col-12 history-item d-flex">
+            <span class="time">
+              {{ displayTime(message.timestamp.created) }} |
+            </span>
+            <span class="msg">
+              {{ users[message.from] ? users[message.from].username : 'Bank' }}
+              ->
+              {{ users[message.to] ? users[message.to].username : 'Bank' }}
+              ::
+              <span>{{ message.cash }}</span>
+              <br />
+              <span>{{ message.message }}</span>
+            </span>
           </div>
         </div>
       </div>
@@ -59,6 +67,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+
 export default Vue.extend({
   props: ['history', 'messages', 'users'],
   data: () => ({
@@ -66,7 +75,9 @@ export default Vue.extend({
   }),
   computed: {
     displayTime: () => (time) => {
-      return `${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
+      return `${String(time.getHours()).padStart(2, '0')}:${String(
+        time.getMinutes()
+      ).padStart(2, '0')}:${String(time.getSeconds()).padStart(2, '0')}`
     }
   }
 })
@@ -117,6 +128,13 @@ export default Vue.extend({
     padding: 0.5em 0;
     margin: 0;
     border-bottom: 1px solid #eee;
+    .history-item {
+      flex-wrap: nowrap;
+      .time {
+        flex-shrink: 0;
+        width: 5em;
+      }
+    }
   }
 }
 </style>

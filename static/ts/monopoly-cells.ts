@@ -2,15 +2,13 @@ export const cellType = {
   0: {
     name: '取得可能土地',
     0: {
-      0: {
-        name: '鉄道会社'
-      },
-      1: {
-        name: 'パワーライン'
-      }
+      name: '住宅地'
     },
     1: {
-      name: '住宅地'
+      name: '鉄道会社'
+    },
+    2: {
+      name: 'パワーライン'
     }
   },
   1: {
@@ -69,9 +67,11 @@ export const boardCellsData = [
   {
     name: 'リーディング鉄道',
     type: 0,
+    infra: 1,
     color_group: 0,
     is_power_company: false,
-    rent: [25, 50, 100, 200]
+    rent: [25, 50, 100, 200],
+    price: 200
   },
   {
     name: 'オリエンタル通り',
@@ -118,9 +118,11 @@ export const boardCellsData = [
   {
     name: '電力会社',
     type: 0,
+    infra: 2,
     color_group: 11,
     is_power_company: true,
-    rent: [4, 10]
+    rent: [4, 10],
+    price: 150
   },
   {
     name: 'ステーツ通り',
@@ -141,9 +143,11 @@ export const boardCellsData = [
   {
     name: 'ペンシルバニア鉄道',
     type: 0,
+    infra: 1,
     color_group: 0,
     is_power_company: false,
-    rent: [25, 50, 100, 200]
+    rent: [25, 50, 100, 200],
+    price: 200
   },
   {
     name: 'セントジェームズプレース',
@@ -213,9 +217,11 @@ export const boardCellsData = [
   {
     name: 'B&O鉄道',
     type: 0,
+    infra: 1,
     color_group: 0,
     is_power_company: false,
-    rent: [25, 50, 100, 200]
+    rent: [25, 50, 100, 200],
+    price: 200
   },
   {
     name: 'アトランティック通り',
@@ -236,9 +242,11 @@ export const boardCellsData = [
   {
     name: '水道会社',
     type: 0,
+    infra: 2,
     color_group: 11,
     is_power_company: true,
-    rent: [4, 10]
+    rent: [4, 10],
+    price: 150
   },
   {
     name: 'マービンガーデン',
@@ -286,9 +294,11 @@ export const boardCellsData = [
   {
     name: 'ショートライン鉄道',
     type: 0,
+    infra: 1,
     color_group: 0,
     is_power_company: false,
-    rent: [25, 50, 100, 200]
+    rent: [25, 50, 100, 200],
+    price: 200
   },
   {
     name: 'チャンス',

@@ -32,6 +32,7 @@
             :users="joinedUsers"
             :cells="cells"
             :visited="visited"
+            :dice="myDice"
             :has-auth="isOwner(uid) || me.auth.position"
             @position-click="showPositionModal"
             @cell-click="showCellDetailModal"
@@ -66,6 +67,7 @@
         :users="joinedUsers"
         :is-your-time="isYourTime"
         @pay-click="showPayModal"
+        @throw-dice="setMyDice"
       />
       <send-message-modal
         :users="joinedUsers"
@@ -207,6 +209,7 @@ export default Vue.extend({
       modalTarget: {},
       visited: true,
       myPosition: 0,
+      myDice: [],
       tab: 'default',
       unsibscribe: () => {}
     }
@@ -294,6 +297,9 @@ export default Vue.extend({
         this.$refs.boardCells.scrollTop = tgt.parentElement.offsetTop - 100
       }
       this.visited = this.tab === 'cells'
+    },
+    setMyDice(diceRoll) {
+      this.myDice = diceRoll
     },
     showPayModal(uid = 'bank') {
       this.modalTarget = { to: uid }
@@ -406,19 +412,6 @@ body {
   }
   .row {
     margin-bottom: 1em;
-  }
-  .row.board-stat {
-    margin-bottom: 0.5em;
-    > div {
-      margin-bottom: 0.5em;
-    }
-  }
-  .dice {
-    font-size: 1.2em;
-    span {
-      padding: 0.3em;
-      border-radius: 3px;
-    }
   }
   button.separated {
     margin-left: 1em;

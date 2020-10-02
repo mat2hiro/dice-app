@@ -171,7 +171,7 @@ export const actions: ActionTree<IState, IState> = {
     const batch = firebase.firestore().batch()
     const now = new Date()
     cells.docs.forEach((doc) => {
-      batch.set(doc.ref, { owner: '', house: 0 })
+      batch.update(doc.ref, { owner: '', house: 0 })
     })
     users.docs.forEach((doc, idx) => {
       batch.update(doc.ref, {
@@ -250,6 +250,7 @@ export const actions: ActionTree<IState, IState> = {
       )
     }
     await Promise.all(promises)
+    return diceRoll
   },
   skip: async ({ state, getters }, uid: string) => {
     const nextuid: string = getters.nextUserId(uid)

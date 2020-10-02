@@ -3,19 +3,17 @@
     <div class="container">
       <div class="board-stat">
         <div class="dice">
-          <p>
-            {{ diceUserName }}:
+          {{ diceUserName }}:
+          <span class="text-nowrap">
             <span
               class="border bg-white"
               :class="{ 'text-danger': !!double }"
               >{{ diceValue.join(' + ') }}</span
             >
             = {{ diceValue.reduce((pre, vl) => pre + vl, 0) }}
-          </p>
+          </span>
         </div>
-        <div class="double">
-          <p>Double: {{ double }}</p>
-        </div>
+        <div class="double small">Double: {{ double }}</div>
       </div>
     </div>
   </div>
@@ -45,11 +43,19 @@ export default Vue.extend({
     .board-stat {
       height: 100%;
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
       justify-content: space-between;
       .dice {
+        font-size: 1.2em;
         margin-right: 1em;
+        .border {
+          padding: 0.3em;
+          border-radius: 3px;
+        }
+      }
+      .double {
+        flex-shrink: 0;
       }
     }
   }

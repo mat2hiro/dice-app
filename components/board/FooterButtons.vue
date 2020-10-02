@@ -70,7 +70,8 @@ export default Vue.extend({
       this.$emit('pay-click', uid)
     },
     async clickThrowDice() {
-      await this.throwDice({ uid: this.uid })
+      const diceRoll = await this.throwDice({ uid: this.uid })
+      this.$emit('throw-dice', diceRoll)
     }
   }
 })
