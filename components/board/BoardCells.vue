@@ -17,7 +17,7 @@
       >
         <div class="houses">
           <span
-            v-for="i of cell.house"
+            v-for="i of Math.max(cell.house, 0)"
             :key="i"
             :style="iconHouse(cell.owner)"
           ></span>
