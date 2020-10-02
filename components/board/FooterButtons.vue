@@ -23,6 +23,7 @@
               v-if="isYourTime"
               type="buttton"
               class="btn btn-primary separated"
+              :disabled="isLoading"
               @click="clickThrowDice"
             >
               Throw Dice
@@ -31,7 +32,8 @@
               v-if="isYourTime"
               type="button"
               class="btn btn-success separated"
-              @click="skip(uid)"
+              :disabled="isLoading"
+              @click="clickSkip()"
             >
               Skip
             </button>
@@ -60,6 +62,11 @@ export default Vue.extend({
     UserButton
   },
   props: ['users', 'isYourTime'],
+  data() {
+    return {
+      isLoading: false
+    }
+  },
   computed: {
     ...mapGetters('auth', ['uid']),
     ...mapGetters('board', ['isOwner'])
@@ -69,8 +76,18 @@ export default Vue.extend({
     openPayModal(uid = 'bank') {
       this.$emit('pay-click', uid)
     },
+    async clickSkip() {
+      this.isLoading = true
+      await this.skip(this.uid).catch(console.error)
+      this.isLoading = false
+    },
     async clickThrowDice() {
-      await this.throwDice({ uid: this.uid })
+      this.isLoading = true
+      const diceRoll = await this.throwDice({ uid: this.uid }).catch(
+        console.error
+      )
+      this.isLoading = false
+      this.$emit('throw-dice', diceRoll)
     }
   }
 })

@@ -5,7 +5,12 @@
         <label>Your Name</label>
       </div>
       <div class="col-12">
-        <input :value="nameInput" class="form-control" @input="setUsername" />
+        <input
+          :value="nameInput"
+          class="form-control"
+          maxlength="16"
+          @input="setUsername"
+        />
       </div>
     </div>
     <div class="row align-items-top">

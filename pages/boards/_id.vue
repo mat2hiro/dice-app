@@ -30,10 +30,12 @@
         >
           <board-cells
             :users="joinedUsers"
-            :cells="boardCells"
+            :cells="cells"
             :visited="visited"
+            :dice="myDice"
             :has-auth="isOwner(uid) || me.auth.position"
             @position-click="showPositionModal"
+            @cell-click="showCellDetailModal"
             @scroll-to-icon="scrollToMyIcon"
           />
         </div>
@@ -50,9 +52,14 @@
             @pay-click="showPayModal"
           />
           <card-result :card="card" :is-your-time="isYourTime" />
-          <nuxt-link to="/" class="btn btn-secondary"
-            >Leave the board</nuxt-link
+          <nuxt-link to="/" class="btn btn-secondary">Leave</nuxt-link>
+          <button
+            v-if="isOwner(uid)"
+            class="btn btn-secondary"
+            @click="reset(uid)"
           >
+            Reset
+          </button>
           <history :history="history" :messages="messages" :users="users" />
         </div>
       </div>
@@ -60,22 +67,29 @@
         :users="joinedUsers"
         :is-your-time="isYourTime"
         @pay-click="showPayModal"
+        @throw-dice="setMyDice"
       />
       <send-message-modal
         :users="joinedUsers"
-        :default-to-uid="modalTarget"
+        :default-to-uid="modalTarget.to"
         :has-auth="isOwner(uid) || me.auth.payment"
       />
       <change-position-modal
         :users="joinedUsers"
-        :default-to-uid="modalTarget"
-        :cells="boardCells"
+        :default-to-uid="modalTarget.to"
+        :cells="cells"
         :has-auth="isOwner(uid) || me.auth.position"
       />
       <change-auth-modal
-        :user="joinedUsers[modalTarget]"
-        :to-uid="modalTarget"
+        :user="joinedUsers[modalTarget.to]"
+        :to-uid="modalTarget.to"
         :has-auth="isOwner(uid)"
+      />
+      <cell-detail-modal
+        :users="joinedUsers"
+        :cells="cells"
+        :cell-idx="modalTarget.cellIdx"
+        :has-auth="isOwner(uid) || me.auth.housing"
       />
     </div>
   </div>
@@ -93,11 +107,10 @@ import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
 import FooterButtons from '~/components/board/FooterButtons.vue'
 
-import SendMessageModal from '~/components/modal/SendMessageModal.vue'
-import ChangePositionModal from '~/components/modal/ChangePositionModal.vue'
-import ChangeAuthModal from '~/components/modal/ChangeAuthModal.vue'
-
-import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
+import SendMessageModal from '~/components/modal/SendMessage.vue'
+import ChangePositionModal from '~/components/modal/ChangePosition.vue'
+import ChangeAuthModal from '~/components/modal/ChangeAuth.vue'
+import CellDetailModal from '~/components/modal/CellDetail.vue'
 
 const boardsRef = firebase.firestore().collection('boards')
 
@@ -110,6 +123,7 @@ export default Vue.extend({
     SendMessageModal,
     ChangePositionModal,
     ChangeAuthModal,
+    CellDetailModal,
     BoardCells,
     FooterButtons
   },
@@ -129,7 +143,6 @@ export default Vue.extend({
     const username = store.getters['auth/username']
     const uid = store.getters['auth/uid']
     const me = await usersRef.doc(store.getters['auth/uid']).get()
-    console.log(me)
     const fbPromises = []
     if (!me.exists) {
       fbPromises.push(
@@ -145,7 +158,8 @@ export default Vue.extend({
           position: 0,
           auth: {
             payment: false,
-            position: false
+            position: false,
+            housing: false
           }
         })
       )
@@ -192,10 +206,10 @@ export default Vue.extend({
       usersRef: boardsRef.doc('any').collection('users'),
       displayName: '',
       randVal: [0, 16],
-      modalTarget: '',
-      boardCells: boardCellsData,
+      modalTarget: {},
       visited: true,
       myPosition: 0,
+      myDice: [],
       tab: 'default',
       unsibscribe: () => {}
     }
@@ -209,6 +223,7 @@ export default Vue.extend({
       'users',
       'history',
       'messages',
+      'cells',
       'card'
     ]),
     ...mapState('auth', ['uid', 'username']),
@@ -263,6 +278,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('board', [
       'clear',
+      'reset',
       'throwDice',
       'skip',
       'drawCard',
@@ -282,22 +298,31 @@ export default Vue.extend({
       }
       this.visited = this.tab === 'cells'
     },
+    setMyDice(diceRoll) {
+      this.myDice = diceRoll
+    },
     showPayModal(uid = 'bank') {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-send-message')
       })
     },
     showPositionModal(uid) {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-position')
       })
     },
     showAuthModal(uid) {
-      this.modalTarget = uid
+      this.modalTarget = { to: uid }
       this.$nextTick(() => {
         this.$bvModal.show('modal-change-auth')
+      })
+    },
+    showCellDetailModal(cellIdx) {
+      this.modalTarget = { cellIdx }
+      this.$nextTick(() => {
+        this.$bvModal.show('modal-cell-detail')
       })
     },
     async clickThrowDice() {
@@ -387,19 +412,6 @@ body {
   }
   .row {
     margin-bottom: 1em;
-  }
-  .row.board-stat {
-    margin-bottom: 0.5em;
-    > div {
-      margin-bottom: 0.5em;
-    }
-  }
-  .dice {
-    font-size: 1.2em;
-    span {
-      padding: 0.3em;
-      border-radius: 3px;
-    }
   }
   button.separated {
     margin-left: 1em;

@@ -70,7 +70,8 @@ export default Vue.extend({
     cashInput: 0,
     message: '',
     touid: 'bank',
-    fromuid: 'bank'
+    fromuid: 'bank',
+    isLoading: false
   }),
   computed: {
     ...mapGetters('auth', ['uid'])
@@ -92,14 +93,16 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
-      if (this.cashInput < 0) return
+      if (this.cashInput < 0 || this.isLoading) return
+      this.isLoading = true
       await this.sendMessage({
         from: this.fromuid !== 'bank' ? this.fromuid : '',
         to: this.touid !== 'bank' ? this.touid : '',
         timestamp: { created: new Date() },
         cash: +this.cashInput,
         message: this.message
-      })
+      }).catch(console.error)
+      this.isLoading = false
       this.$bvModal.hide('modal-send-message')
     }
   }

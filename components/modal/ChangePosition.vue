@@ -44,7 +44,8 @@ export default Vue.extend({
   props: ['users', 'defaultToUid', 'cells', 'hasAuth'],
   data: () => ({
     touid: '',
-    positionIdx: ''
+    positionIdx: '',
+    isLoading: false
   }),
   computed: {
     ...mapGetters('auth', ['uid'])
@@ -62,10 +63,13 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
+      if (this.isLoading) return
+      this.isLoading = true
       await this.setUser({
         uid: this.touid,
         user: { position: +this.positionIdx }
-      })
+      }).catch(console.error)
+      this.isLoading = false
       this.$bvModal.hide('modal-change-position')
     }
   }

@@ -9,7 +9,7 @@
           placeholder="Enter boardID"
         />
       </div>
-      <button type="submit" class="btn btn-primary">
+      <button type="submit" class="btn btn-primary" :disabled="sending">
         Enter
       </button>
     </form>
@@ -24,7 +24,7 @@
             placeholder="New boardID"
           />
         </div>
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" class="btn btn-primary" :disabled="sending">
           Create
         </button>
       </form>
@@ -37,6 +37,8 @@ import Vue from 'vue'
 import { mapState } from 'vuex'
 import firebase from '~/plugins/firebase'
 
+import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
+
 const db = firebase.firestore()
 
 export default Vue.extend({
@@ -45,7 +47,8 @@ export default Vue.extend({
       enterId: '',
       notExists: false,
       newId: '',
-      alreadyExists: false
+      alreadyExists: false,
+      sending: false
     }
   },
   computed: {
@@ -53,25 +56,54 @@ export default Vue.extend({
   },
   methods: {
     async enter(ev) {
-      const boardSnap = await db
-        .collection('boards')
-        .where('boardName', '==', this.enterId)
-        .get()
-      if (!boardSnap.empty) {
-        boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
+      this.sending = true
+      try {
+        const boardSnap = await db
+          .collection('boards')
+          .where('boardName', '==', this.enterId)
+          .get()
+        if (!boardSnap.empty) {
+          boardSnap.forEach((bd) => this.$router.push(`/boards/${bd.id}`))
+        }
+      } catch (e) {
+        console.error(e)
       }
+      this.sending = false
     },
     async create(ev) {
       if (!this.newId) return
-      const addedRef = await db.collection('boards').add({
-        timestamp: {
-          created: new Date()
-        },
-        isActive: true,
-        boardName: this.newId,
-        owner: this.uid
-      })
-      this.$router.push(`/boards/${addedRef.id}`)
+      this.sending = true
+      try {
+        const now = new Date()
+        const addedRef = await db.collection('boards').add({
+          timestamp: {
+            created: now
+          },
+          isActive: true,
+          boardName: this.newId,
+          owner: this.uid
+        })
+        await Promise.all(
+          boardCellsData.map((cell, idx) =>
+            db
+              .collection('boards')
+              .doc(addedRef.id)
+              .collection('cells')
+              .doc('' + idx)
+              .set({
+                ...cell,
+                owner: '',
+                house: 0,
+                timestamp: { updated: now }
+              })
+          )
+        )
+        this.$router.push(`/boards/${addedRef.id}`)
+      } catch (e) {
+        console.error(e)
+      }
+
+      this.sending = false
     }
   }
 })

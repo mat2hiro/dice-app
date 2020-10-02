@@ -10,6 +10,7 @@ export interface ITime<Dt> {
 interface IAuth {
   payment: boolean
   position: boolean
+  housing: boolean
 }
 
 export interface IUser<Dt> {
@@ -53,5 +54,11 @@ export interface IMessage<Dt> {
   from: string
   to: string
   message: string
+  timestamp: ITime<Dt>
+}
+
+export interface ICell<Dt> {
+  owner: string
+  house: number
   timestamp: ITime<Dt>
 }
