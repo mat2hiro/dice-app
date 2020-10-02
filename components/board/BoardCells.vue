@@ -13,10 +13,14 @@
         v-if="cell.owner"
         class="own-icon"
         :class="`house-${cell.house}`"
-        :style="iconBg(uid)"
+        :style="iconBg(cell.owner)"
       >
         <div class="houses">
-          <span v-for="i of cell.house" :key="i" :style="iconHouse(uid)"></span>
+          <span
+            v-for="i of cell.house"
+            :key="i"
+            :style="iconHouse(cell.owner)"
+          ></span>
         </div>
       </div>
       <div class="row align-items-center">
