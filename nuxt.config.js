@@ -1,5 +1,5 @@
 export default {
-  mode: 'universal',
+  target: 'static',
   /*
    ** Headers of the page
    */
@@ -97,6 +97,8 @@ export default {
      ** You can extend webpack config here
      */
     extend(config, ctx) {},
-    vendor: ['firebaseui']
+    babel: {
+      compact: true
+    }
   }
 }
