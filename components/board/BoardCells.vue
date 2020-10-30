@@ -69,7 +69,6 @@
 </template>
 
 <script lang="ts">
-import crypto from 'crypto'
 import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
@@ -275,63 +274,9 @@ export default Vue.extend({
         height: 10px;
         top: 0.05em;
         right: 0.05em;
+        border-radius: 2px;
       }
     }
-
-    // &.house-1 {
-    //   .houses span {
-    //     top: 0.2em;
-    //     right: 0.2em;
-    //   }
-    // }
-    // &.house-2 {
-    //   .houses span {
-    //     &:nth-child(1) {
-    //       top: 0.05em;
-    //       right: 0.35em;
-    //     }
-    //     &:nth-child(2) {
-    //       top: 0.35em;
-    //       right: 0.05em;
-    //     }
-    //   }
-    // }
-    // &.house-3 {
-    //   .houses span {
-    //     &:nth-child(1) {
-    //       top: 0.35em;
-    //       right: 0.35em;
-    //     }
-    //     &:nth-child(2) {
-    //       top: 0.05em;
-    //       right: 0.35em;
-    //     }
-    //     &:nth-child(3) {
-    //       top: 0.35em;
-    //       right: 0.05em;
-    //     }
-    //   }
-    // }
-    // &.house-4 {
-    //   .houses span {
-    //     &:nth-child(1) {
-    //       top: 0.35em;
-    //       right: 0.35em;
-    //     }
-    //     &:nth-child(2) {
-    //       top: 0.05em;
-    //       right: 0.35em;
-    //     }
-    //     &:nth-child(3) {
-    //       top: 0.35em;
-    //       right: 0.05em;
-    //     }
-    //     &:nth-child(4) {
-    //       top: 0.05em;
-    //       right: 0.05em;
-    //     }
-    //   }
-    // }
   }
   .row {
     margin-bottom: 0 !important;

@@ -292,9 +292,9 @@ export default Vue.extend({
       if (tab === 'cells') this.visited = true
     },
     scrollToMyIcon() {
-      const tgt = document.querySelector('#' + this.uid)
-      if (tgt && tgt instanceof HTMLElement && tgt.parentElement) {
-        this.$refs.boardCells.scrollTop = tgt.parentElement.offsetTop - 100
+      const tgt = document.querySelector('.is-here')
+      if (tgt && tgt instanceof HTMLElement) {
+        this.$refs.boardCells.scrollTop = tgt.offsetTop - 100
       }
       this.visited = this.tab === 'cells'
     },
