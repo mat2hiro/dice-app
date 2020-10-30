@@ -10,11 +10,13 @@
       <div class="nav-main container">
         <div class="row">
           <div class="col-12">your name</div>
-          <input
-            :value="username"
-            class="form-control col-12"
-            @input="(ev) => setUserName(ev)"
-          />
+          <div class="col-12">
+            <input
+              :value="username"
+              class="form-control col-12"
+              @input="(ev) => setUserName(ev)"
+            />
+          </div>
         </div>
       </div>
       <div class="nav-footer container">
