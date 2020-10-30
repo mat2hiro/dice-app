@@ -262,7 +262,7 @@ export default Vue.extend({
   async destroyed() {
     this.unsubscribe()
     const leftCB = [
-      this.setUser({
+      this.setBoardUser({
         uid: this.uid,
         user: {
           'timestamp.left': new Date()
@@ -283,7 +283,7 @@ export default Vue.extend({
       'skip',
       'drawCard',
       'setBoard',
-      'setUser',
+      'setBoardUser',
       'startListener',
       'stopListener'
     ]),

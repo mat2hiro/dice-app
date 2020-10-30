@@ -51,7 +51,7 @@ export default Vue.extend({
     ...mapGetters('auth', ['uid'])
   },
   methods: {
-    ...mapActions('board', ['setUser']),
+    ...mapActions('board', ['setBoardUser']),
     init() {
       this.reset()
       this.touid = this.defaultToUid
@@ -65,7 +65,7 @@ export default Vue.extend({
       ev.preventDefault()
       if (this.isLoading) return
       this.isLoading = true
-      await this.setUser({
+      await this.setBoardUser({
         uid: this.touid,
         user: { position: +this.positionIdx }
       }).catch(console.error)

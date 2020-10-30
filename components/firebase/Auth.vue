@@ -10,6 +10,7 @@ export default {
   name: 'FirebaseAuth',
   mounted() {
     const auth = firebase.auth()
+    const db = firebase.firestore()
     if (process.browser) {
       const firebaseui = require('firebaseui')
       const ui =
@@ -23,6 +24,17 @@ export default {
         callbacks: {
           signInSuccessWithAuthResult: (authResult: any) => {
             this.$emit('firebasepopup', true)
+            const user = authResult.user
+            if (authResult.additionalUserInfo.isNewUser) {
+              db.collection('users')
+                .doc(user.uid)
+                .set({
+                  timestamp: {
+                    created: new Date()
+                  },
+                  username: user.displayName
+                })
+            }
             this.$router.push('/')
           },
           signInFailure: () => {

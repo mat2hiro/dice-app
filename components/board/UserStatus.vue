@@ -80,7 +80,7 @@ export default Vue.extend({
     ...mapGetters('board', ['isOwner'])
   },
   methods: {
-    ...mapActions('board', ['setUser']),
+    ...mapActions('board', ['setBoardUser']),
     openPayModal(uid) {
       // if (this.isOwner(this.uid)) return
       this.$emit('pay-click', uid)
@@ -91,15 +91,15 @@ export default Vue.extend({
     async setUsername(ev) {
       if (!ev.target.value) return
       this.$data.nameInput = ev.target.value
-      await this.setUser({ uid: this.uid, user: { username: ev.target.value } })
+      await this.setBoardUser({ uid: this.uid, user: { username: ev.target.value } })
     },
     async setUserOrder(ev, uid) {
       if (!ev.target.value) return
-      await this.setUser({ uid, user: { order: +ev.target.value } })
+      await this.setBoardUser({ uid, user: { order: +ev.target.value } })
     },
     async setUserCash(ev, uid) {
       ev.preventDefault()
-      await this.setUser({ uid, user: { cash: +ev.target.value } })
+      await this.setBoardUser({ uid, user: { cash: +ev.target.value } })
     }
   }
 })
