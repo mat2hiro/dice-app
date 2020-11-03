@@ -6,7 +6,7 @@
       class="cell"
       :class="{
         'is-here': isHere(uid, idx) && !visited,
-        mortage: cell.house < 0
+        mortgage: cell.house < 0
       }"
     >
       <div
@@ -224,7 +224,7 @@ export default Vue.extend({
       background-color: #17a2b8;
     }
   }
-  &.mortage {
+  &.mortgage {
     background: #a5a5a5;
   }
   .own-icon {

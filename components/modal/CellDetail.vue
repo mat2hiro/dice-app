@@ -171,7 +171,7 @@ export default Vue.extend({
       )
     },
     houseStatus() {
-      return this.house < 0 ? 'mortage' : this.house > 4 ? 'hotel' : this.house
+      return this.house < 0 ? 'mortgage' : this.house > 4 ? 'hotel' : this.house
     },
     houseMax() {
       return !this.cell.infra && this.isMonopoly ? 5 : 0
