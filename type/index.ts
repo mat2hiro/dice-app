@@ -18,6 +18,7 @@ export interface IUser<Dt> {
   cash: number
   order: number
   position: number
+  color: string
   auth: IAuth
   timestamp: ITime<Dt>
 }

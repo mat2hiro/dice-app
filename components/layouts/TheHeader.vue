@@ -1,7 +1,7 @@
 <template>
   <header>
     <h1><nuxt-link to="/">Dice App</nuxt-link></h1>
-    <HamburgerNav />
+    <HamburgerNav v-if="!$route.path.startsWith('/boards')" />
   </header>
 </template>
 

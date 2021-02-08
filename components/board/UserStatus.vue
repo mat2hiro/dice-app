@@ -5,12 +5,27 @@
         <label>Your Name</label>
       </div>
       <div class="col-12">
-        <input
-          :value="nameInput"
-          class="form-control"
-          maxlength="16"
-          @input="setUsername"
-        />
+        <div class="input-group">
+          <input
+            :value="me.username"
+            class="form-control"
+            maxlength="16"
+            @input="setUsername"
+          />
+          <div class="input-group-append">
+            <label
+              class="btn btn-light is-bordered is-relative d-flex align-items-center"
+            >
+              <div class="col-prev" :style="{ background: me.color }"></div>
+              <input
+                class="display-invisible"
+                type="color"
+                :value="me.color"
+                @change="setUserColor"
+              />
+            </label>
+          </div>
+        </div>
       </div>
     </div>
     <div class="row align-items-top">
@@ -52,7 +67,10 @@
                 @input="(ev) => setUserCash(ev, key)"
               />
               <div class="input-group-append">
-                <button class="btn btn-light" @click="openPayModal(key)">
+                <button
+                  class="btn btn-light is-bordered"
+                  @click="openPayModal(key)"
+                >
                   $
                 </button>
               </div>
@@ -69,12 +87,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
-  props: ['users', 'throwUid', 'displayName'],
-  data() {
-    return {
-      nameInput: this.$props.displayName
-    }
-  },
+  props: ['users', 'throwUid', 'me'],
   computed: {
     ...mapGetters('auth', ['uid']),
     ...mapGetters('board', ['isOwner'])
@@ -82,7 +95,6 @@ export default Vue.extend({
   methods: {
     ...mapActions('board', ['setBoardUser']),
     openPayModal(uid) {
-      // if (this.isOwner(this.uid)) return
       this.$emit('pay-click', uid)
     },
     openAuthModal(uid) {
@@ -90,8 +102,17 @@ export default Vue.extend({
     },
     async setUsername(ev) {
       if (!ev.target.value) return
-      this.$data.nameInput = ev.target.value
-      await this.setBoardUser({ uid: this.uid, user: { username: ev.target.value } })
+      await this.setBoardUser({
+        uid: this.uid,
+        user: { username: ev.target.value }
+      })
+    },
+    async setUserColor(ev) {
+      if (!ev.target.value) return
+      await this.setBoardUser({
+        uid: this.uid,
+        user: { color: ev.target.value }
+      })
     },
     async setUserOrder(ev, uid) {
       if (!ev.target.value) return
@@ -122,7 +143,21 @@ export default Vue.extend({
     cursor: pointer;
   }
 }
-.cash-input .btn {
+.btn.is-bordered {
   border: 1px solid #ced4da;
+}
+.col-prev {
+  width: 1em;
+  height: 1em;
+}
+.display-invisible {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  visibility: hidden;
 }
 </style>

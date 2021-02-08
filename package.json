@@ -21,6 +21,8 @@
     "firebase": "^7.14.3",
     "firebaseui": "^4.5.0",
     "nuxt": "^2.0.0",
+    "verte": "^0.0.12",
+    "vue-color": "^2.8.1",
     "vue2-touch-events": "^2.2.1",
     "vuex-persistedstate": "^3.0.1"
   },

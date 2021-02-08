@@ -47,7 +47,7 @@
           <user-status
             :users="joinedUsers"
             :throw-uid="throwUser.uid"
-            :display-name="displayName"
+            :me="me"
             @username-click="showAuthModal"
             @pay-click="showPayModal"
           />
@@ -99,6 +99,8 @@
 import Vue from 'vue'
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import firebase from '~/plugins/firebase'
+
+import { uidColor } from '~/services'
 
 import DiceResult from '~/components/board/DiceResult.vue'
 import CardResult from '~/components/board/CardResult.vue'
@@ -154,6 +156,7 @@ export default Vue.extend({
           },
           order: userCount + 1,
           username,
+          color: uidColor(uid),
           cash: 1500,
           position: 0,
           auth: {
