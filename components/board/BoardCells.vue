@@ -5,7 +5,8 @@
       :key="idx"
       class="cell"
       :class="{
-        'is-here': isHere(uid, idx) && !visited,
+        'is-here': isHere(uid, idx),
+        visited: isHere(uid, idx) && !visited,
         mortgage: cell.house < 0
       }"
     >
@@ -219,7 +220,7 @@ export default Vue.extend({
   border-bottom: 1px solid #eee;
   @media (max-width: 767px) {
     transition: background-color 1s;
-    &.is-here {
+    &.visited {
       background-color: #17a2b8;
     }
   }
