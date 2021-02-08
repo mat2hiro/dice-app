@@ -35,7 +35,7 @@ export const boardCellsData = [
   {
     name: 'GO',
     type: 1,
-    get_money: 200
+    getMoney: 200
   },
   {
     name: '地中海通り',
@@ -182,7 +182,7 @@ export const boardCellsData = [
   {
     name: 'フリーパーキング',
     type: 1,
-    get_money: 0
+    getMoney: 0
   },
   {
     name: 'ケンタッキー通り',
@@ -317,7 +317,7 @@ export const boardCellsData = [
   {
     name: '物品税',
     type: 1,
-    get_money: -100
+    getMoney: -100
   },
   {
     name: 'ボードウォーク',
