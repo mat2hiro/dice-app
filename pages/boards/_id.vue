@@ -2,19 +2,19 @@
   <div class="d-relative wrapper">
     <div
       class="d-sm-flex d-md-none swipe left"
-      @click="() => toggleBoardTab('cells')"
+      @click="() => toggleBoardTab(-1)"
     >
       <span><<</span>
     </div>
     <div
       class="d-sm-flex d-md-none swipe right"
-      @click="() => toggleBoardTab('default')"
+      @click="() => toggleBoardTab(+1)"
     >
       <span>>></span>
     </div>
     <div
-      v-touch:swipe.right="() => toggleBoardTab('cells')"
-      v-touch:swipe.left="() => toggleBoardTab('default')"
+      v-touch:swipe.right="() => toggleBoardTab(-1)"
+      v-touch:swipe.left="() => toggleBoardTab(+1)"
       class="container board"
     >
       <dice-result
@@ -22,45 +22,46 @@
         :dice-value="dice.value"
         :double="throwUser.double"
       />
-      <div class="row">
-        <div
-          ref="boardCells"
-          class="col-12 col-md-6 board-column cells"
-          :class="{ 'is-visible': tab === 'cells' }"
-        >
-          <board-cells
-            :users="joinedUsers"
-            :cells="cells"
-            :visited="visited"
-            :dice="myDice"
-            :has-auth="isOwner(uid) || me.auth.position"
-            @position-click="showPositionModal"
-            @cell-click="showCellDetailModal"
-            @scroll-to-icon="scrollToMyIcon"
-          />
-        </div>
-        <div
-          class="col-12 col-md-6 board-column default"
-          :class="{ 'is-visible': tab === 'default' }"
-        >
-          <h2>{{ boardName }}</h2>
-          <user-status
-            :users="joinedUsers"
-            :throw-uid="throwUser.uid"
-            :display-name="displayName"
-            @username-click="showAuthModal"
-            @pay-click="showPayModal"
-          />
-          <card-result :card="card" :is-your-time="isYourTime" />
-          <nuxt-link to="/" class="btn btn-secondary">Leave</nuxt-link>
-          <button
-            v-if="isOwner(uid)"
-            class="btn btn-secondary"
-            @click="reset(uid)"
-          >
-            Reset
-          </button>
-          <history :history="history" :messages="messages" :users="users" />
+      <div class="of-none">
+        <div class="row" :class="{ 'to-left': tab > 0, 'to-right': tab < 0 }">
+          <div ref="boardCells" class="col-4 col-md-6 board-column cells">
+            <board-cells
+              :users="joinedUsers"
+              :cells="cells"
+              :visited="visited"
+              :dice="myDice"
+              :has-auth="isOwner(uid) || me.auth.position"
+              @position-click="showPositionModal"
+              @cell-click="showCellDetailModal"
+              @scroll-to-icon="scrollToMyIcon"
+            />
+          </div>
+          <div class="col-4 col-md-6 board-column default">
+            <h2>{{ boardName }}</h2>
+            <user-status
+              :users="joinedUsers"
+              :throw-uid="throwUser.uid"
+              :display-name="displayName"
+              @username-click="showAuthModal"
+              @pay-click="showPayModal"
+            />
+            <card-result :card="card" :is-your-time="isYourTime" />
+            <nuxt-link to="/" class="btn btn-secondary">Leave</nuxt-link>
+            <button
+              v-if="isOwner(uid)"
+              class="btn btn-secondary"
+              @click="reset(uid)"
+            >
+              Reset
+            </button>
+            <history :history="history" :messages="messages" :users="users" />
+          </div>
+          <div class="col-4 d-md-none board-column settings">
+            <!-- <board-status
+              :users="joinedUsers"
+              @username-click="showAuthModal"
+            /> -->
+          </div>
         </div>
       </div>
       <footer-buttons
@@ -106,6 +107,7 @@ import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
 import FooterButtons from '~/components/board/FooterButtons.vue'
+// import BoardStatus from '~/components/board/BoardStatus.vue'
 
 import SendMessageModal from '~/components/modal/SendMessage.vue'
 import ChangePositionModal from '~/components/modal/ChangePosition.vue'
@@ -125,6 +127,7 @@ export default Vue.extend({
     ChangeAuthModal,
     CellDetailModal,
     BoardCells,
+    // BoardStatus,
     FooterButtons
   },
   async asyncData({ params, redirect, store }) {
@@ -210,7 +213,7 @@ export default Vue.extend({
       visited: true,
       myPosition: 0,
       myDice: [],
-      tab: 'default',
+      tab: 0,
       unsibscribe: () => {}
     }
   },
@@ -287,9 +290,10 @@ export default Vue.extend({
       'startListener',
       'stopListener'
     ]),
-    toggleBoardTab(tab = 'default') {
-      this.tab = tab
-      if (tab === 'cells') this.visited = true
+    toggleBoardTab(t = 0) {
+      const nt = Math.min(Math.max(this.tab + t, -1), 1)
+      this.tab = nt
+      if (nt === -1) this.visited = true
     },
     scrollToMyIcon() {
       const tgt = document.querySelector('.is-here')
@@ -362,37 +366,38 @@ body {
   }
 }
 .board {
-  > .row {
+  .of-none {
     overflow-x: hidden;
-    flex-wrap: nowrap;
-    margin-bottom: 0;
-  }
-  &-column {
-    padding-top: 40px;
-    padding-bottom: 40px;
-    margin-top: 60px;
-    max-height: calc(100vh - 190px);
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    &.cells {
-      background: #fafdf6;
-      margin-top: 0;
-      max-height: calc(100vh - 130px);
-    }
-    @media (max-width: 767px) {
-      transition: transform 0.5s;
-      &.cells {
+    > .row {
+      flex-wrap: nowrap;
+      margin-bottom: 0;
+      .board-column {
+        padding-top: 40px;
+        padding-bottom: 40px;
         margin-top: 60px;
         max-height: calc(100vh - 190px);
-        transform: translateX(-100%);
-        &.is-visible {
-          transform: none;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        &.cells {
+          background: #fafdf6;
+          margin-top: 0;
+          max-height: calc(100vh - 130px);
         }
       }
-      &.default {
+      @media (max-width: 767px) {
+        width: calc(300% + 30px);
+        margin-left: calc(-100% - 15px);
+        transition: transform 0.5s;
         transform: none;
-        &.is-visible {
-          transform: translateX(-100%);
+        .board-column.cells {
+          margin-top: 60px;
+          max-height: calc(100vh - 190px);
+        }
+        &.to-right {
+          transform: translateX(calc(100% / 3));
+        }
+        &.to-left {
+          transform: translateX(calc(-100% / 3));
         }
       }
     }
