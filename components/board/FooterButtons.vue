@@ -12,8 +12,7 @@
                   <user-button
                     v-for="(user, key) in users"
                     :key="key"
-                    :username="user.username"
-                    :color="user.color"
+                    :user="user"
                     :on-click="() => openPayModal(key)"
                   />
                 </div>

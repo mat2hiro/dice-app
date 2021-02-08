@@ -13,13 +13,13 @@
         v-if="cell.owner"
         class="own-icon"
         :class="`house-${cell.house}`"
-        :style="iconBg(users[cell.owner].color)"
+        :style="userIconBg(cell.owner)"
       >
         <div class="houses">
           <span
             v-for="i of Math.max(cell.house, 0)"
             :key="i"
-            :style="iconHouse(users[cell.owner].color)"
+            :style="userIconHouse(cell.owner)"
           ></span>
         </div>
       </div>
@@ -34,8 +34,7 @@
             v-for="key in positionedUsers(idx)"
             :key="key"
             :html-id="key"
-            :username="users[key].username"
-            :color="users[key].color"
+            :user="users[key]"
             :on-click="(e) => openPositionModal(e, key)"
           />
         </transition-group>
@@ -88,19 +87,19 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters('auth', ['uid']),
-    iconBg() {
-      return (bg) => {
-        const col = bgColorStyle(bg)
+    userIconBg() {
+      return (uid) => {
+        const col = bgColorStyle(this.$props.users[uid]?.color || '')
         return {
           'border-color': `transparent ${col.background} transparent transparent`,
           color: col.color
         }
       }
     },
-    iconHouse() {
-      return (bg) => {
+    userIconHouse() {
+      return (uid) => {
         return {
-          'background-color': bgColorStyle(bg).color
+          'background-color': bgColorStyle(this.$props.users[uid]?.color).color
         }
       }
     },
@@ -125,7 +124,7 @@ export default Vue.extend({
     },
     cellColor() {
       return (cell) => ({
-        background: cellColorsData[cell.color_group]
+        background: cellColorsData[cell.colorGroup]
       })
     },
     rentPrice() {
@@ -157,7 +156,7 @@ export default Vue.extend({
       return (cell) =>
         this.cells
           ? this.cells.filter(
-              (c) => c.type === 0 && c.color_group === cell.color_group
+              (c) => c.type === 0 && c.colorGroup === cell.colorGroup
             )
           : []
     },

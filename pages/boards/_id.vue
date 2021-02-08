@@ -87,7 +87,7 @@
         :cells="cells"
         :has-auth="isOwner(uid) || me.auth.position"
       />
-      <change-auth-modal
+      <user-status-modal
         :user="joinedUsers[modalTarget.to]"
         :to-uid="modalTarget.to"
         :has-auth="isOwner(uid)"
@@ -118,7 +118,7 @@ import FooterButtons from '~/components/board/FooterButtons.vue'
 
 import SendMessageModal from '~/components/modal/SendMessage.vue'
 import ChangePositionModal from '~/components/modal/ChangePosition.vue'
-import ChangeAuthModal from '~/components/modal/ChangeAuth.vue'
+import UserStatusModal from '~/components/modal/UserStatus.vue'
 import CellDetailModal from '~/components/modal/CellDetail.vue'
 
 const boardsRef = firebase.firestore().collection('boards')
@@ -131,7 +131,7 @@ export default Vue.extend({
     UserStatus,
     SendMessageModal,
     ChangePositionModal,
-    ChangeAuthModal,
+    UserStatusModal,
     CellDetailModal,
     BoardCells,
     FooterButtons
@@ -338,7 +338,7 @@ export default Vue.extend({
     showAuthModal(uid) {
       this.modalTarget = { to: uid }
       this.$nextTick(() => {
-        this.$bvModal.show('modal-change-auth')
+        this.$bvModal.show('modal-user-status')
       })
     },
     showCellDetailModal(cellIdx) {

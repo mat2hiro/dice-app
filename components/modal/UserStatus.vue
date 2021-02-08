@@ -1,8 +1,12 @@
 <template>
-  <b-modal id="modal-change-auth" @show="init" @ok="submit" @hidden="reset">
+  <b-modal id="modal-user-status" @show="init" @ok="submit" @hidden="reset">
     <form class="form-group" @submit.stop.prevent="submit">
       <div class="row align-items-center">
         <p class="col-12">{{ user && user.username }}</p>
+      </div>
+      <div class="row align-items-center">
+        <span class="col-6">Total Assets:</span>
+        <p class="col-6">${{ toUid && totalAsset(toUid) }}</p>
       </div>
       <div class="row align-items-center">
         <span class="col-6">
@@ -70,6 +74,7 @@ export default Vue.extend({
     },
     isLoading: false
   }),
+  computed: mapGetters('board', ['totalAsset']),
   methods: {
     ...mapActions('board', ['setBoardUser']),
     init() {
@@ -91,7 +96,7 @@ export default Vue.extend({
         user: { auth: this.auth }
       }).catch(console.error)
       this.isLoading = false
-      this.$bvModal.hide('modal-change-auth')
+      this.$bvModal.hide('modal-user-status')
     }
   }
 })

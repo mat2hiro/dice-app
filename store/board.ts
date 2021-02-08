@@ -150,7 +150,20 @@ export const getters: GetterTree<IState, IState> = {
         ? key
         : pre
     }, '')
-  }
+  },
+  totalAsset: (
+    { cells }: { cells: ICell<Date>[] },
+    { joinedUsers }: { joinedUsers: IUsers<Date> }
+  ) => (uid: string) =>
+    joinedUsers[uid].cash +
+      cells
+        .filter((c) => c.owner === uid)
+        .reduce(
+          (acc, c) =>
+            acc +
+            (c.house < 0 ? c.price / 2 : c.price + c.buildPrice * c.house),
+          0
+        ) || 0
 }
 
 interface PDice {
