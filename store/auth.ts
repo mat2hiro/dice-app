@@ -19,8 +19,18 @@ export const getters = {
 }
 
 export const actions = {
-  gotUser({ commit }: any, user: any) {
-    commit('setUser', user)
+  async gotUser({ commit }: any, user: any) {
+    const uSnap = await firebase
+      .firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+    if (uSnap.exists) {
+      console.log(uSnap.data())
+      commit('setUser', { ...user, displayName: uSnap.data().username })
+    } else {
+      commit('setUser', { ...user })
+    }
   },
   signout({ commit }: any) {
     firebase
@@ -29,6 +39,14 @@ export const actions = {
       .then(() => {
         commit('signout')
       })
+  },
+  updateUserName({ commit }: any, { uid, userName }) {
+    firebase
+      .firestore()
+      .collection('users')
+      .doc(uid)
+      .update({ username: userName })
+    commit('updateUserName', userName)
   }
 }
 
@@ -37,6 +55,9 @@ export const mutations = {
     state.status = 'loggedIn'
     state.uid = user.uid
     state.username = user.displayName
+  },
+  updateUserName(state: IState, userName: string) {
+    state.username = userName
   },
   signout(state: IState) {
     state.status = 'loggedOut'

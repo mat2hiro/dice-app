@@ -13,13 +13,13 @@
         v-if="cell.owner"
         class="own-icon"
         :class="`house-${cell.house}`"
-        :style="iconBg(cell.owner)"
+        :style="iconBg(users[cell.owner].color)"
       >
         <div class="houses">
           <span
             v-for="i of Math.max(cell.house, 0)"
             :key="i"
-            :style="iconHouse(cell.owner)"
+            :style="iconHouse(users[cell.owner].color)"
           ></span>
         </div>
       </div>
@@ -35,7 +35,7 @@
             :key="key"
             :html-id="key"
             :username="users[key].username"
-            :uid="key"
+            :color="users[key].color"
             :on-click="(e) => openPositionModal(e, key)"
           />
         </transition-group>
@@ -73,7 +73,7 @@ import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
-import { userColor } from '~/services'
+import { bgColorStyle } from '~/services'
 import { cellColorsData } from '~/static/ts/monopoly-cells.ts'
 
 export default Vue.extend({
@@ -89,8 +89,8 @@ export default Vue.extend({
   computed: {
     ...mapGetters('auth', ['uid']),
     iconBg() {
-      return (uid) => {
-        const col = userColor(uid)
+      return (bg) => {
+        const col = bgColorStyle(bg)
         return {
           'border-color': `transparent ${col.background} transparent transparent`,
           color: col.color
@@ -98,9 +98,9 @@ export default Vue.extend({
       }
     },
     iconHouse() {
-      return (uid) => {
+      return (bg) => {
         return {
-          'background-color': userColor(uid).color
+          'background-color': bgColorStyle(bg).color
         }
       }
     },

@@ -13,7 +13,7 @@
                     v-for="(user, key) in users"
                     :key="key"
                     :username="user.username"
-                    :uid="key"
+                    :color="user.color"
                     :on-click="() => openPayModal(key)"
                   />
                 </div>

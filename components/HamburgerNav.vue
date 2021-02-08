@@ -7,7 +7,18 @@
       <div class="nav-header">
         <label class="close-input" for="nav-input"></label>
       </div>
-      <div class="nav-main container"></div>
+      <div class="nav-main container">
+        <div class="row">
+          <div class="col-12">your name</div>
+          <div class="col-12">
+            <input
+              :value="username"
+              class="form-control col-12"
+              @input="(ev) => setUserName(ev)"
+            />
+          </div>
+        </div>
+      </div>
       <div class="nav-footer container">
         <ul>
           <li>
@@ -24,11 +35,19 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapActions, mapGetters } from 'vuex'
 
 export default Vue.extend({
+  computed: {
+    ...mapGetters('auth', ['username', 'uid'])
+  },
+  mounted() {
+    this.name = this.username
+  },
   methods: {
-    leave() {
-      console.log('clicked leave.')
+    ...mapActions('auth', ['updateUserName']),
+    setUserName(event) {
+      this.updateUserName({ uid: this.uid, userName: event.target.value })
     }
   }
 })

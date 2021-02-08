@@ -14,6 +14,7 @@ import {
 import firebase from '~/plugins/firebase'
 
 const boardsRef = firebase.firestore().collection('boards')
+const usersRef = firebase.firestore().collection('users')
 
 interface IUsers<Dt> {
   [key: string]: IUser<Dt>
@@ -327,7 +328,7 @@ export const actions: ActionTree<IState, IState> = {
       owner: board.owner
     })
   },
-  setUser: async (
+  setBoardUser: async (
     { state },
     { uid, user }: { uid: string; user: Partial<IUser<Date>> }
   ) => {
