@@ -61,5 +61,8 @@ export interface IMessage<Dt> {
 export interface ICell<Dt> {
   owner: string
   house: number
+  type: number
+  price?: number
+  buildPrice?: number
   timestamp: ITime<Dt>
 }

@@ -24,7 +24,7 @@
           <div class="col-4">
             <div v-if="!cell.infra" class="card text-center">
               <div class="card-header">build</div>
-              <div class="card-body">${{ cell.build_price }}</div>
+              <div class="card-body">${{ cell.buildPrice }}</div>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ export default Vue.extend({
     sameColorCell() {
       return this.cells
         ? this.cells.filter(
-            (c) => c.type === 0 && c.color_group === this.cell.color_group
+            (c) => c.type === 0 && c.colorGroup === this.cell.colorGroup
           )
         : []
     },
@@ -189,7 +189,7 @@ export default Vue.extend({
       const prevHouse = this.cell.house
       const diff = nextHouse - prevHouse
       if (diff === 0) return 0
-      const build = this.cell.build_price || 0
+      const build = this.cell.buildPrice || 0
       let ret = 0
       if (diff < 0) {
         ret = Math.round(

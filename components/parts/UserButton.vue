@@ -3,7 +3,7 @@
     :id="htmlId"
     class="user-icon"
     type="button"
-    :style="bgStyle(color)"
+    :style="bgStyle"
     @click="onClick"
   >
     {{ username ? String.fromCodePoint(username.codePointAt(0)) : '' }}
@@ -16,10 +16,13 @@ import Vue from 'vue'
 import { bgColorStyle } from '~/services'
 
 export default Vue.extend({
-  props: ['username', 'color', 'htmlId', 'onClick'],
+  props: ['user', 'htmlId', 'onClick'],
   computed: {
     bgStyle() {
-      return bgColorStyle
+      return bgColorStyle(this.$props.user?.color || '')
+    },
+    username() {
+      return this.$props.user?.username || ''
     }
   }
 })
