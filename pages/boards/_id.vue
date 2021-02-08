@@ -60,6 +60,13 @@
           >
             Reset
           </button>
+          <button
+            v-if="isOwner(uid)"
+            class="btn btn-secondary"
+            @click="shuffleOrder()"
+          >
+            Shuffle
+          </button>
           <history :history="history" :messages="messages" :users="users" />
         </div>
       </div>
@@ -250,14 +257,25 @@ export default Vue.extend({
           ? this.users[message.to].username
           : 'Bank'
         const h = this.$createElement
-        const msgP = [h('p', `${fromName} -> ${toName} $${message.cash}`)]
+        const msgP = [
+          h(
+            'p',
+            `
+              ${fromName}
+              ${fromName === toName ? '' : ' -> ' + toName}
+              ${message.cash > 0 ? '$' + message.cash : ''}
+            `
+          )
+        ]
         if (message.message) {
           msgP.push(h('p', `"${message.message}"`))
         }
-        this.$bvToast.toast(msgP, {
-          title: 'Send Payment',
-          autoHideDelay: 3000
-        })
+        if (msgP.length > 0) {
+          this.$bvToast.toast(msgP, {
+            title: message.cash !== 0 ? 'Send Payment' : 'notification',
+            autoHideDelay: 3000
+          })
+        }
       }
     })
     this.startListener()
@@ -288,7 +306,8 @@ export default Vue.extend({
       'setBoard',
       'setBoardUser',
       'startListener',
-      'stopListener'
+      'stopListener',
+      'shuffleOrder'
     ]),
     toggleBoardTab(tab = 'default') {
       this.tab = tab

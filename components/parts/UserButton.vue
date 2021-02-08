@@ -6,7 +6,7 @@
     :style="bgStyle(color)"
     @click="onClick"
   >
-    {{ username ? username[0] : '' }}
+    {{ username ? String.fromCodePoint(username.codePointAt(0)) : '' }}
   </button>
 </template>
 

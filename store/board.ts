@@ -198,6 +198,36 @@ export const actions: ActionTree<IState, IState> = {
       batch.commit()
     ])
   },
+  shuffleOrder: async ({ state, getters, dispatch }) => {
+    const joined = Object.keys(getters.joinedUsers)
+    const orders = [...Array(joined.length).keys()]
+    for (let i = orders.length - 1; i >= 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const t = orders[i]
+      orders[i] = orders[j]
+      orders[j] = t
+    }
+    const now = new Date()
+    await Promise.all([
+      ...joined.map((uid, idx) =>
+        boardsRef
+          .doc(state.id)
+          .collection('users')
+          .doc(uid)
+          .update({
+            'timestamp.updated': now,
+            order: orders[idx] + 1
+          })
+      ),
+      dispatch('sendMessage', {
+        from: '',
+        to: '',
+        timestamp: { created: now },
+        cash: 0,
+        message: 'Order Shuffled.'
+      })
+    ])
+  },
   throwDice: async (
     { state, getters, dispatch },
     { uid, dice }: { uid: string; dice: PDice }
