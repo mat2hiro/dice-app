@@ -10,13 +10,8 @@
         mortgage: cell.house < 0
       }"
     >
-      <div
-        v-if="cell.owner"
-        class="own-icon"
-        :class="`house-${cell.house}`"
-        :style="userIconBg(cell.owner)"
-      >
-        <div class="houses">
+      <div v-if="cell.owner" class="own-icon" :class="`house-${cell.house}`">
+        <div class="wrapper" :style="ownIconBg(cell.owner)">
           <span
             v-for="i of Math.max(cell.house, 0)"
             :key="i"
@@ -88,12 +83,12 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters('auth', ['uid']),
-    userIconBg() {
+    ownIconBg() {
       return (uid) => {
         const col = bgColorStyle(this.$props.users[uid]?.color || '')
         return {
-          'border-color': `transparent ${col.background} transparent transparent`,
-          color: col.color
+          '--main-bg-color': col.background,
+          'background-color': 'var(--main-bg-color)'
         }
       }
     },
@@ -229,20 +224,18 @@ export default Vue.extend({
   }
   .own-icon {
     position: absolute;
-    height: 1.5em;
-    width: 1.5em;
+    height: 1.4em;
+    width: 1em;
     top: 0;
     right: 0;
 
-    border-style: solid;
-    border-width: 0 1.5em 1.5em 0;
-
-    text-align: right;
-
-    .houses {
+    .wrapper {
       position: relative;
-      width: 1.5em;
-      height: 1.5em;
+      width: 100%;
+      height: 100%;
+
+      border: 1px solid #a5a5a5;
+      border-bottom: none;
 
       span {
         position: absolute;
@@ -250,30 +243,66 @@ export default Vue.extend({
         height: 4px;
         border-radius: 50%;
       }
+
+      &::before,
+      &::after {
+        display: block;
+        position: absolute;
+        content: '';
+        height: 0.5em;
+        width: 0.5em;
+        top: calc(100% - 1px);
+      }
+
+      &::before {
+        left: -1px;
+        background: linear-gradient(
+          135deg,
+          var(--main-bg-color) 50%,
+          #a5a5a5 50%,
+          #a5a5a5 60%,
+          transparent 60%
+        );
+        border-left: 1px solid #a5a5a5;
+      }
+
+      &::after {
+        right: -1px;
+        background: linear-gradient(
+          225deg,
+          var(--main-bg-color) 50%,
+          #a5a5a5 50%,
+          #a5a5a5 60%,
+          transparent 60%
+        );
+        border-right: 1px solid #a5a5a5;
+      }
     }
 
-    .houses span {
+    .wrapper > span {
       &:nth-child(1) {
-        top: 0.05em;
-        right: 0.05em;
+        top: 0.1em;
+        right: 0.1em;
       }
       &:nth-child(2) {
-        top: 0.05em;
-        right: 0.35em;
+        top: 0.1em;
+        left: 0.1em;
       }
       &:nth-child(3) {
-        top: 0.35em;
-        right: 0.05em;
+        bottom: calc(0.5em + 1px);
+        right: 0.1em;
       }
       &:nth-child(4) {
-        top: 0.35em;
-        right: 0.35em;
+        bottom: calc(0.5em + 1px);
+        left: 0.1em;
       }
       &:nth-child(5) {
-        width: 10px;
-        height: 10px;
-        top: 0.05em;
-        right: 0.05em;
+        width: unset;
+        height: unset;
+        top: 0.1em;
+        right: 0.1em;
+        left: 0.1em;
+        bottom: calc(0.2em + 1px);
         border-radius: 2px;
       }
     }
