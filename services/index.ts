@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 
-export const uidColor = (uid: string): string =>
+export const uidColor = (uid: string = ''): string =>
   '#' +
   crypto
     .createHash('md5')
@@ -8,7 +8,7 @@ export const uidColor = (uid: string): string =>
     .digest('hex')
     .slice(0, 6)
 
-export const bgColorStyle = (bg: string) => {
+export const bgColorStyle = (bg: string = '#fff') => {
   const r = parseInt(bg.substr(1, 2), 16)
   const g = parseInt(bg.substr(3, 2), 16)
   const b = parseInt(bg.substr(5, 2), 16)

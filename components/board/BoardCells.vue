@@ -85,7 +85,7 @@ export default Vue.extend({
     ...mapGetters('auth', ['uid']),
     ownIconBg() {
       return (uid) => {
-        const col = bgColorStyle(this.$props.users[uid]?.color || '')
+        const col = bgColorStyle(this.$props.users[uid]?.color)
         return {
           '--main-bg-color': col.background,
           'background-color': 'var(--main-bg-color)'
@@ -281,27 +281,27 @@ export default Vue.extend({
 
     .wrapper > span {
       &:nth-child(1) {
-        top: 0.1em;
-        right: 0.1em;
+        top: 2px;
+        right: 2px;
       }
       &:nth-child(2) {
-        top: 0.1em;
-        left: 0.1em;
+        top: 2px;
+        left: 2px;
       }
       &:nth-child(3) {
-        bottom: calc(0.5em + 1px);
-        right: 0.1em;
+        bottom: calc(0.4em + 3px);
+        right: 2px;
       }
       &:nth-child(4) {
-        bottom: calc(0.5em + 1px);
-        left: 0.1em;
+        bottom: calc(0.4em + 3px);
+        left: 2px;
       }
       &:nth-child(5) {
         width: unset;
         height: unset;
-        top: 0.1em;
-        right: 0.1em;
-        left: 0.1em;
+        top: 2px;
+        right: 2px;
+        left: 2px;
         bottom: calc(0.2em + 1px);
         border-radius: 2px;
       }
