@@ -269,7 +269,7 @@ export const actions: ActionTree<IState, IState> = {
       dispatch('sendMessage', {
         from: uid,
         cash: user.releaseCard > 0 ? 0 : 50,
-        message: 'Release from jail.'
+        message: 'Released from jail.'
       })
     ])
   },

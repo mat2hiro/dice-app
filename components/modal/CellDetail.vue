@@ -313,6 +313,7 @@ export default Vue.extend({
       if (this.isLoading || !this.suspectUid) return
       this.isLoading = true
       await this.goToJail(this.suspectUid)
+      this.suspectUid = ''
       this.isLoading = false
       this.$nextTick(() => {
         this.$bvModal.hide('modal-cell-detail')
