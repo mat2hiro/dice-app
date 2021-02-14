@@ -11,6 +11,7 @@ import {
   IBoard,
   ICell
 } from '../type'
+import { cellPositions } from '../static/ts/monopoly-cells'
 import firebase from '~/plugins/firebase'
 
 const boardsRef = firebase.firestore().collection('boards')
@@ -235,9 +236,40 @@ export const actions: ActionTree<IState, IState> = {
       dispatch('sendMessage', {
         from: '',
         to: '',
-        timestamp: { created: now },
         cash: 0,
         message: 'Order Shuffled.'
+      })
+    ])
+  },
+  goToJail: async ({ dispatch }, uid: string) => {
+    await Promise.all([
+      dispatch('setBoardUser', {
+        uid,
+        user: {
+          position: cellPositions.JAIL,
+          jail: 3
+        }
+      }),
+      dispatch('sendMessage', {
+        from: uid,
+        message: `Go to jail.`
+      })
+    ])
+  },
+  releaseFromJail: async ({ state, dispatch }, uid: string) => {
+    const user = state.users[uid]
+    await Promise.all([
+      dispatch('setBoardUser', {
+        uid,
+        user: {
+          releaseCard: Math.max(user.releaseCard - 1, 0),
+          jail: 0
+        }
+      }),
+      dispatch('sendMessage', {
+        from: uid,
+        cash: user.releaseCard > 0 ? 0 : 50,
+        message: 'Release from jail.'
       })
     ])
   },
@@ -245,6 +277,7 @@ export const actions: ActionTree<IState, IState> = {
     { state, getters, dispatch },
     { uid, dice }: { uid: string; dice: PDice }
   ) => {
+    const user = state.users[uid]
     const diceProps = dice || { min: 1, max: 6, amount: 2 }
     const diceRoll = Array(diceProps.amount)
       .fill(0)
@@ -254,40 +287,49 @@ export const actions: ActionTree<IState, IState> = {
         )
       )
     const isDouble = diceRoll.every((val) => val === diceRoll[0])
-    const nextuid: string = isDouble ? uid : getters.nextUserId(uid)
-    const nextPosition =
-      state.users[uid].position +
-      diceRoll.reduce((p, v) => {
-        return p + v
-      }, 0)
-    const now = new Date()
+    const isRepeat = user.jail <= 1 && state.throwUser.double < 2 && isDouble
+
     const promises = [
       boardsRef.doc(state.id).update({
         dice: {
           value: diceRoll,
           uid,
-          time: now
+          time: new Date()
         },
         throwUser: {
-          uid: nextuid,
-          double: isDouble ? state.throwUser.double + 1 : 0
+          uid: isRepeat ? uid : getters.nextUserId(uid),
+          double: isRepeat ? state.throwUser.double + 1 : 0
         }
-      }),
-      boardsRef
-        .doc(state.id)
-        .collection('users')
-        .doc(uid)
-        .update({
-          'timestamp.updated': now,
-          position: nextPosition % 40
-        })
+      })
     ]
+    let nextPosition = user.position
+    if (isDouble && state.throwUser.double === 2) {
+      promises.push(dispatch('goToJail', uid))
+    } else {
+      nextPosition +=
+        isDouble || user.jail <= 1
+          ? diceRoll.reduce((p, v) => {
+              return p + v
+            }, 0)
+          : 0
+      promises.push(
+        dispatch('setBoardUser', {
+          uid,
+          user: {
+            jail: isDouble ? 0 : Math.max(user.jail - 1, 0),
+            position: nextPosition % 40
+          }
+        })
+      )
+      if (user.jail === 1) {
+        promises.push(dispatch('releaseFromJail', uid))
+      }
+    }
     if (nextPosition >= 40) {
       promises.push(
         dispatch('sendMessage', {
           from: '',
           to: uid,
-          timestamp: { created: now },
           cash: 200,
           message: 'Got salary.'
         })
@@ -328,11 +370,15 @@ export const actions: ActionTree<IState, IState> = {
     ])
   },
   sendMessage: async ({ state }, message: IMessage<Date>) => {
+    const now = new Date()
     const messagePromises: Promise<any>[] = [
       boardsRef
         .doc(state.id)
         .collection('messages')
-        .add(message)
+        .add({
+          ...message,
+          timestamp: { created: now }
+        })
     ]
     if (message.cash !== 0) {
       if (message.from) {
@@ -341,13 +387,13 @@ export const actions: ActionTree<IState, IState> = {
             .doc(state.id)
             .collection('users')
             .doc(message.from)
-            .update({ 'timestamp.updated': new Date() }),
+            .update({ 'timestamp.updated': now }),
           boardsRef
             .doc(state.id)
             .collection('users')
             .doc(message.from)
             .update({
-              cash: state.users[message.from].cash - message.cash
+              cash: state.users[message.from].cash - (message.cash || 0)
             })
         )
       }
@@ -358,7 +404,7 @@ export const actions: ActionTree<IState, IState> = {
             .collection('users')
             .doc(message.to)
             .update({
-              cash: state.users[message.to].cash + message.cash
+              cash: state.users[message.to].cash + (message.cash || 0)
             })
         )
       }

@@ -1,3 +1,7 @@
+export enum cellPositions {
+  JAIL = 10
+}
+
 export const cellType = {
   0: {
     name: '取得可能土地',

@@ -164,6 +164,8 @@ export default Vue.extend({
           order: userCount + 1,
           username,
           color: uidColor(uid),
+          jail: 0,
+          releaseCard: 0,
           cash: 1500,
           position: 0,
           auth: {
@@ -176,7 +178,6 @@ export default Vue.extend({
     } else {
       fbPromises.push(
         usersRef.doc(uid).update({
-          username,
           timestamp: {
             joined: now,
             updated: now,

@@ -7,7 +7,7 @@
           <span class="text-nowrap">
             <span
               class="border bg-white"
-              :class="{ 'text-danger': !!double }"
+              :class="{ 'text-danger': !!isDouble }"
               >{{ diceValue.join(' + ') }}</span
             >
             = {{ diceValue.reduce((pre, vl) => pre + vl, 0) }}
@@ -21,10 +21,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapActions } from 'vuex'
 
 export default Vue.extend({
-  props: ['diceUserName', 'diceValue', 'double']
+  props: ['diceUserName', 'diceValue', 'double'],
+  computed: {
+    isDouble() {
+      return this.diceValue?.every((val) => val === this.diceValue[0])
+    }
+  }
 })
 </script>
 
