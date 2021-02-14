@@ -42,6 +42,20 @@
             </div>
             <template v-if="isHere(uid, idx)">
               <button
+                v-if="cell.type === 3 && inJail"
+                class="btn btn-warning"
+                @click.stop.prevent.once="releaseFromJail(uid)"
+              >
+                ${{ releasePrice }}
+              </button>
+              <button
+                v-else-if="cell.type === 4"
+                class="btn btn-warning"
+                @click.stop.prevent.once="goToJail(uid)"
+              >
+                Go
+              </button>
+              <button
                 v-if="cell.type === 0 && !cell.owner"
                 class="btn btn-success"
                 @click.stop.prevent.once="buyCell(uid, idx)"
@@ -123,6 +137,12 @@ export default Vue.extend({
         background: cellColorsData[cell.colorGroup]
       })
     },
+    inJail() {
+      return (this.$props.users?.[this.uid]?.jail || 0) > 0
+    },
+    releasePrice() {
+      return this.$props.users?.[this.uid]?.releaseCard ? 0 : 50
+    },
     rentPrice() {
       return (uid, cell) => {
         if (
@@ -167,12 +187,17 @@ export default Vue.extend({
     }
   },
   methods: {
-    ...mapActions('board', ['sendMessage', 'setCell']),
+    ...mapActions('board', [
+      'sendMessage',
+      'setCell',
+      'setBoardUser',
+      'goToJail',
+      'releaseFromJail'
+    ]),
     async payForRent(uid, cell) {
       await this.sendMessage({
         from: uid,
         to: cell.owner,
-        timestamp: { created: new Date() },
         cash: this.rentPrice(uid, cell),
         message: `Pay for ${cell.name}'s rent price.`
       })
@@ -184,7 +209,6 @@ export default Vue.extend({
         this.sendMessage({
           from: uid,
           to: '',
-          timestamp: { created: new Date() },
           cash: +cell.price,
           message: `Buy ${cell.name}`
         })

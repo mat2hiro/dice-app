@@ -104,10 +104,41 @@
         </div>
       </form>
     </div>
-    <template v-if="isChangeOwner || cashToPay !== 0" v-slot:modal-ok>
+    <div v-else-if="cell.type === 3">
+      <div v-for="key in uidsInJail" :key="key" class="row align-items-center">
+        <div class="col-8">{{ users[key].username }}:</div>
+        <div class="col-4">{{ users[key].jail }}</div>
+      </div>
+    </div>
+    <div v-else-if="cell.type === 4">
+      <form class="form-group" @submit.stop.prevent="submit">
+        <div class="row align-items-center">
+          <span class="col-3">suspect:</span>
+          <div class="col-9">
+            <select
+              v-model="suspectUid"
+              class="form-control"
+              :disabled="!isOwner"
+            >
+              <template v-for="(user, key) in users">
+                <option :key="key" :value="key">
+                  {{ user.username }}
+                </option>
+              </template>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <template
+      v-if="isChangeOwner || cashToPay !== 0 || suspectUid"
+      v-slot:modal-ok
+    >
       {{
         isChangeOwner
           ? 'delegate'
+          : suspectUid
+          ? 'send'
           : `${cashToPay > 0 ? 'pay' : 'get'} \$${Math.abs(cashToPay)}`
       }}
     </template>
@@ -123,6 +154,7 @@ export default Vue.extend({
   data: () => ({
     house: 0,
     ownerId: '',
+    suspectUid: '',
     isLoading: false
   }),
   computed: {
@@ -202,13 +234,22 @@ export default Vue.extend({
         )
       }
       return ret
+    },
+    uidsInJail() {
+      const users = this.$props.users || {}
+      return Object.keys(users).filter(i => users[i]?.jail > 0)
     }
   },
   mounted() {
     this.init()
   },
   methods: {
-    ...mapActions('board', ['sendMessage', 'setCell']),
+    ...mapActions('board', [
+      'sendMessage',
+      'setCell',
+      'setBoardUser',
+      'goToJail'
+    ]),
     init() {
       this.reset()
       this.house = this.cell.house || 0
@@ -225,6 +266,21 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
+      switch (this.cell.type) {
+        case 0:
+          await this.rentChange()
+          break
+        case 4:
+          await this.toJail()
+          break
+        default:
+          break
+      }
+      this.$nextTick(() => {
+        this.$bvModal.hide('modal-cell-detail')
+      })
+    },
+    async rentChange() {
       if (this.isLoading) return
       this.isLoading = true
       if (this.isChangeOwner || this.cashToPay !== 0) {
@@ -240,7 +296,6 @@ export default Vue.extend({
             this.sendMessage({
               from: this.cashToPay > 0 ? this.cell.owner : '',
               to: this.cashToPay > 0 ? '' : this.cell.owner,
-              timestamp: { created: new Date() },
               cash: Math.abs(this.cashToPay),
               message: `Building for ${this.cell.name}`
             })
@@ -252,6 +307,13 @@ export default Vue.extend({
         }
         await Promise.all(promises).catch(console.error)
       }
+      this.isLoading = false
+    },
+    async toJail() {
+      if (this.isLoading || !this.suspectUid) return
+      this.isLoading = true
+      await this.goToJail(this.suspectUid)
+      this.suspectUid = ''
       this.isLoading = false
       this.$nextTick(() => {
         this.$bvModal.hide('modal-cell-detail')

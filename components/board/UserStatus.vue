@@ -52,10 +52,19 @@
               @input="(ev) => setUserOrder(ev, key)"
             />
           </div>
-          <div class="username col-4" @click="openAuthModal(key)">
+          <div
+            class="username col-4 d-flex align-items-center p-relative"
+            @click="openAuthModal(key)"
+          >
             <label :class="{ 'text-primary': key === throwUid }">{{
               user.username
             }}</label>
+            <div v-if="user.releaseCard > 0" class="card-container">
+              <span
+                class="cards"
+                :class="{ 'is-2': user.releaseCard > 1 }"
+              ></span>
+            </div>
           </div>
           <div class="cash-input col-5 d-flex align-items-center">
             <div class="input-group">
@@ -159,5 +168,45 @@ export default Vue.extend({
   padding: 0;
   border: 0;
   visibility: hidden;
+}
+.card-container {
+  position: absolute;
+  right: 0;
+  width: 15px;
+  top: 0;
+  bottom: 0;
+  border: none;
+  .cards {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    &::before,
+    &::after {
+      position: absolute;
+      width: 0.7em;
+      height: 1em;
+      background: #ead1dc;
+      border-radius: 2px;
+      border: 1px solid #a5a5a5;
+    }
+    &::before {
+      content: '';
+      top: calc(50% - 0.5em);
+      left: 0;
+      z-index: 2;
+    }
+    &.is-2 {
+      &::before {
+        top: calc(50% - 0.4em);
+      }
+      &::after {
+        content: '';
+        top: calc(50% - 0.6em);
+        left: 0.2em;
+        z-index: 1;
+      }
+    }
+  }
 }
 </style>

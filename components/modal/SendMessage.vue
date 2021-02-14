@@ -98,7 +98,6 @@ export default Vue.extend({
       await this.sendMessage({
         from: this.fromuid !== 'bank' ? this.fromuid : '',
         to: this.touid !== 'bank' ? this.touid : '',
-        timestamp: { created: new Date() },
         cash: +this.cashInput,
         message: this.message
       }).catch(console.error)

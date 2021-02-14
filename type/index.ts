@@ -19,6 +19,8 @@ export interface IUser<Dt> {
   order: number
   position: number
   color: string
+  jail: number
+  releaseCard: number
   auth: IAuth
   timestamp: ITime<Dt>
 }
