@@ -11,7 +11,7 @@ import {
   IBoard,
   ICell
 } from '../type'
-import { cellPositions } from '../static/ts/monopoly-cells'
+import { CellPositions } from '../static/ts/monopoly-cells'
 import firebase from '~/plugins/firebase'
 
 const boardsRef = firebase.firestore().collection('boards')
@@ -246,7 +246,7 @@ export const actions: ActionTree<IState, IState> = {
       dispatch('setBoardUser', {
         uid,
         user: {
-          position: cellPositions.JAIL,
+          position: CellPositions.JAIL,
           jail: 3
         }
       }),
