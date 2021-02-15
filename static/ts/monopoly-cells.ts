@@ -339,7 +339,7 @@ export const boardCellsData = [
   {
     name: '物品税',
     type: CellTypes.TAX,
-    price: 100,
+    price: 75,
     colorGroup: 13
   },
   {

@@ -42,20 +42,6 @@
             </div>
             <template v-if="isHere(uid, idx)">
               <button
-                v-if="cell.type === cellTypes.JAIL && inJail"
-                class="btn btn-warning"
-                @click.stop.prevent.once="releaseFromJail(uid)"
-              >
-                ${{ releasePrice }}
-              </button>
-              <button
-                v-else-if="cell.type === cellTypes.ARREST"
-                class="btn btn-warning"
-                @click.stop.prevent.once="goToJail(uid)"
-              >
-                Go
-              </button>
-              <button
                 v-if="cell.type === cellTypes.HOUSE && !cell.owner"
                 class="btn btn-success"
                 @click.stop.prevent.once="buyCell(uid, idx)"
@@ -68,6 +54,27 @@
                 @click.stop.prevent.once="payForRent(uid, cell)"
               >
                 ${{ rentPrice(uid, cell) }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.TAX"
+                class="btn btn-warning"
+                @click.stop.prevent.once="payTax(uid, cell)"
+              >
+                ${{ cell.price || 0 }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.JAIL && inJail"
+                class="btn btn-warning"
+                @click.stop.prevent.once="releaseFromJail(uid)"
+              >
+                ${{ releasePrice }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.ARREST"
+                class="btn btn-warning"
+                @click.stop.prevent.once="goToJail(uid)"
+              >
+                Go
               </button>
             </template>
           </div>
@@ -201,6 +208,13 @@ export default Vue.extend({
         to: cell.owner,
         cash: this.rentPrice(uid, cell),
         message: `Pay for ${cell.name}'s rent price.`
+      })
+    },
+    async payTax(uid, cell) {
+      await this.sendMessage({
+        from: uid,
+        cash: cell.price || 0,
+        message: `Pay for ${cell.name}.`
       })
     },
     async buyCell(uid, cellIdx) {
