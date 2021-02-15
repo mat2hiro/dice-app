@@ -6,7 +6,7 @@
     @ok="submit"
     @hidden="reset"
   >
-    <div v-if="cell.type === 0">
+    <div v-if="cell.type === cellTypes.HOUSE">
       <form class="form-group" @submit.stop.prevent="submit">
         <div class="row align-items-center">
           <div class="col-4">
@@ -104,13 +104,13 @@
         </div>
       </form>
     </div>
-    <div v-else-if="cell.type === 3">
+    <div v-else-if="cell.type === cellTypes.JAIL">
       <div v-for="key in uidsInJail" :key="key" class="row align-items-center">
         <div class="col-8">{{ users[key].username }}:</div>
         <div class="col-4">{{ users[key].jail }}</div>
       </div>
     </div>
-    <div v-else-if="cell.type === 4">
+    <div v-else-if="cell.type === cellTypes.ARREST">
       <form class="form-group" @submit.stop.prevent="submit">
         <div class="row align-items-center">
           <span class="col-3">suspect:</span>
@@ -148,6 +148,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapActions, mapGetters } from 'vuex'
+import { CellTypes, InfraTypes } from '../../static/ts/monopoly-cells'
 
 export default Vue.extend({
   props: ['users', 'cells', 'cellIdx', 'hasAuth'],
@@ -155,7 +156,8 @@ export default Vue.extend({
     house: 0,
     ownerId: '',
     suspectUid: '',
-    isLoading: false
+    isLoading: false,
+    cellTypes: CellTypes
   }),
   computed: {
     ...mapGetters('auth', ['uid']),
@@ -164,30 +166,31 @@ export default Vue.extend({
     },
     cellOwner() {
       return (
-        (this.cell.type === 0 && this.users
+        (this.cell.type === CellTypes.HOUSE && this.users
           ? this.users[this.cell.owner]
           : {}) || {}
       )
     },
     rentPrice() {
-      if (this.cell.type !== 0 || this.cell.house < 0) {
+      if (this.cell.type !== CellTypes.HOUSE || this.cell.house < 0) {
         return 0
       }
-      if (this.cell.infra === 1) {
-        return this.cell.rent[Math.max(this.numPossession - 1, 0)]
-      } else if (this.cell.infra === 2) {
-        return `${this.cell.rent[Math.max(this.numPossession - 1, 0)]}x`
-      } else {
-        return (
-          this.cell.rent[this.cell.house] *
-            (1 + (this.cell.house === 0 && this.isMonopoly)) || 0
-        )
+      switch (this.cell.infra) {
+        case InfraTypes.RAILROAD:
+          return this.cell.rent[Math.max(this.numPossession - 1, 0)]
+        case InfraTypes.UTILITY:
+          return `${this.cell.rent[Math.max(this.numPossession - 1, 0)]}x`
+        default:
+          return (
+            this.cell.rent[this.cell.house] *
+              (1 + (this.cell.house === 0 && this.isMonopoly)) || 0
+          )
       }
     },
     sameColorCell() {
       return this.cells
         ? this.cells.filter(
-            (c) => c.type === 0 && c.colorGroup === this.cell.colorGroup
+            (c) => c.type === CellTypes.HOUSE && c.colorGroup === this.cell.colorGroup
           )
         : []
     },
@@ -267,10 +270,10 @@ export default Vue.extend({
     async submit(ev) {
       ev.preventDefault()
       switch (this.cell.type) {
-        case 0:
+        case CellTypes.HOUSE:
           await this.rentChange()
           break
-        case 4:
+        case CellTypes.JAIL:
           await this.toJail()
           break
         default:

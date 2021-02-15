@@ -42,21 +42,7 @@
             </div>
             <template v-if="isHere(uid, idx)">
               <button
-                v-if="cell.type === 3 && inJail"
-                class="btn btn-warning"
-                @click.stop.prevent.once="releaseFromJail(uid)"
-              >
-                ${{ releasePrice }}
-              </button>
-              <button
-                v-else-if="cell.type === 4"
-                class="btn btn-warning"
-                @click.stop.prevent.once="goToJail(uid)"
-              >
-                Go
-              </button>
-              <button
-                v-if="cell.type === 0 && !cell.owner"
+                v-if="cell.type === cellTypes.HOUSE && !cell.owner"
                 class="btn btn-success"
                 @click.stop.prevent.once="buyCell(uid, idx)"
               >
@@ -68,6 +54,27 @@
                 @click.stop.prevent.once="payForRent(uid, cell)"
               >
                 ${{ rentPrice(uid, cell) }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.TAX"
+                class="btn btn-warning"
+                @click.stop.prevent.once="payTax(uid, cell)"
+              >
+                ${{ cell.price || 0 }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.JAIL && inJail"
+                class="btn btn-warning"
+                @click.stop.prevent.once="releaseFromJail(uid)"
+              >
+                ${{ releasePrice }}
+              </button>
+              <button
+                v-else-if="cell.type === cellTypes.ARREST"
+                class="btn btn-warning"
+                @click.stop.prevent.once="goToJail(uid)"
+              >
+                Go
               </button>
             </template>
           </div>
@@ -83,7 +90,7 @@ import { mapActions, mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
 import { bgColorStyle } from '~/services'
-import { cellColorsData } from '~/static/ts/monopoly-cells.ts'
+import { cellColorsData, CellTypes, InfraTypes } from '~/static/ts/monopoly-cells.ts'
 
 export default Vue.extend({
   components: {
@@ -92,7 +99,8 @@ export default Vue.extend({
   props: ['users', 'cells', 'visited', 'dice', 'hasAuth'],
   data() {
     return {
-      cellColors: cellColorsData
+      cellColors: cellColorsData,
+      cellTypes: CellTypes
     }
   },
   computed: {
@@ -127,7 +135,7 @@ export default Vue.extend({
       return (uid, idx) => {
         if (!(uid in this.positionedUsers(idx))) return ''
         const cellData = this.cells[idx] || {}
-        if (cellData.type !== 0) return 'pay'
+        if (cellData.type !== CellTypes.HOUSE) return 'pay'
         const cellDetail = this.cells[idx] || {}
         return !cellDetail.owner ? 'buy' : cellDetail.owner !== uid ? 'pay' : ''
       }
@@ -146,16 +154,16 @@ export default Vue.extend({
     rentPrice() {
       return (uid, cell) => {
         if (
-          cell.type !== 0 ||
+          cell.type !== CellTypes.HOUSE ||
           cell.house < 0 ||
           !cell.owner ||
           cell.owner === uid
         ) {
           return 0
         }
-        if (cell.infra === 1) {
+        if (cell.infra === InfraTypes.RAILROAD) {
           return cell.rent[this.numPossession(cell) - 1]
-        } else if (cell.infra === 2) {
+        } else if (cell.infra === InfraTypes.UTILITY) {
           return (
             cell.rent[this.numPossession(cell) - 1] *
             this.dice.reduce((p, v) => p + v, 0)
@@ -172,7 +180,7 @@ export default Vue.extend({
       return (cell) =>
         this.cells
           ? this.cells.filter(
-              (c) => c.type === 0 && c.colorGroup === cell.colorGroup
+              (c) => c.type === CellTypes.HOUSE && c.colorGroup === cell.colorGroup
             )
           : []
     },
@@ -200,6 +208,13 @@ export default Vue.extend({
         to: cell.owner,
         cash: this.rentPrice(uid, cell),
         message: `Pay for ${cell.name}'s rent price.`
+      })
+    },
+    async payTax(uid, cell) {
+      await this.sendMessage({
+        from: uid,
+        cash: cell.price || 0,
+        message: `Pay for ${cell.name}.`
       })
     },
     async buyCell(uid, cellIdx) {
