@@ -273,6 +273,60 @@ export const actions: ActionTree<IState, IState> = {
       })
     ])
   },
+  moveTo: async (
+    { state, dispatch },
+    {
+      uid,
+      to,
+      goAround = false
+    }: { uid: string; to: number; goAround: boolean }
+  ) => {
+    const { position } = state.users[uid]
+    const promises = [
+      dispatch('setBoardUser', {
+        uid,
+        user: {
+          position: to
+        }
+      })
+    ]
+    if (goAround && to < position) {
+      promises.push(
+        dispatch('sendMessage', {
+          from: '',
+          to: uid,
+          cash: 200,
+          message: 'Got salary.'
+        })
+      )
+    }
+    await Promise.all(promises)
+  },
+  moveBy: async (
+    { state, dispatch },
+    { uid, by, goAround = true }: { uid: string; by: number; goAround: boolean }
+  ) => {
+    const { position } = state.users[uid]
+    const promises = [
+      dispatch('setBoardUser', {
+        uid,
+        user: {
+          position: (40 + position + by) % 40
+        }
+      })
+    ]
+    if (goAround && position + by >= 40) {
+      promises.push(
+        dispatch('sendMessage', {
+          from: '',
+          to: uid,
+          cash: 200,
+          message: 'Got salary.'
+        })
+      )
+    }
+    await Promise.all(promises)
+  },
   throwDice: async (
     { state, getters, dispatch },
     { uid, dice }: { uid: string; dice: PDice }
@@ -302,38 +356,25 @@ export const actions: ActionTree<IState, IState> = {
         }
       })
     ]
-    let nextPosition = user.position
     if (isDouble && state.throwUser.double === 2) {
       promises.push(dispatch('goToJail', uid))
     } else {
-      nextPosition +=
-        isDouble || user.jail <= 1
-          ? diceRoll.reduce((p, v) => {
-              return p + v
-            }, 0)
-          : 0
       promises.push(
         dispatch('setBoardUser', {
           uid,
           user: {
-            jail: isDouble ? 0 : Math.max(user.jail - 1, 0),
-            position: nextPosition % 40
+            jail: isDouble ? 0 : Math.max(user.jail - 1, 0)
           }
+        }),
+        dispatch('moveBy', {
+          uid,
+          by:
+            isDouble || user.jail <= 1 ? diceRoll.reduce((p, v) => p + v, 0) : 0
         })
       )
       if (user.jail === 1) {
         promises.push(dispatch('releaseFromJail', uid))
       }
-    }
-    if (nextPosition >= 40) {
-      promises.push(
-        dispatch('sendMessage', {
-          from: '',
-          to: uid,
-          cash: 200,
-          message: 'Got salary.'
-        })
-      )
     }
     await Promise.all(promises)
     return diceRoll

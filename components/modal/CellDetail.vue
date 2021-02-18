@@ -247,12 +247,7 @@ export default Vue.extend({
     this.init()
   },
   methods: {
-    ...mapActions('board', [
-      'sendMessage',
-      'setCell',
-      'setBoardUser',
-      'goToJail'
-    ]),
+    ...mapActions('board', ['sendMessage', 'setCell', 'goToJail']),
     init() {
       this.reset()
       this.house = this.cell.house || 0
@@ -269,11 +264,12 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
+      console.log(this.cell.type)
       switch (this.cell.type) {
         case CellTypes.HOUSE:
           await this.rentChange()
           break
-        case CellTypes.JAIL:
+        case CellTypes.ARREST:
           await this.toJail()
           break
         default:
@@ -313,6 +309,7 @@ export default Vue.extend({
       this.isLoading = false
     },
     async toJail() {
+      console.log(this.suspectUid)
       if (this.isLoading || !this.suspectUid) return
       this.isLoading = true
       await this.goToJail(this.suspectUid)

@@ -198,7 +198,6 @@ export default Vue.extend({
     ...mapActions('board', [
       'sendMessage',
       'setCell',
-      'setBoardUser',
       'goToJail',
       'releaseFromJail'
     ]),
