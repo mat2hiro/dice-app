@@ -51,7 +51,7 @@ export default Vue.extend({
     ...mapGetters('auth', ['uid'])
   },
   methods: {
-    ...mapActions('board', ['setBoardUser']),
+    ...mapActions('board', ['moveTo']),
     init() {
       this.reset()
       this.touid = this.defaultToUid
@@ -65,9 +65,9 @@ export default Vue.extend({
       ev.preventDefault()
       if (this.isLoading) return
       this.isLoading = true
-      await this.setBoardUser({
+      await this.moveTo({
         uid: this.touid,
-        user: { position: +this.positionIdx }
+        to: +this.positionIdx
       }).catch(console.error)
       this.isLoading = false
       this.$bvModal.hide('modal-change-position')
