@@ -264,7 +264,6 @@ export default Vue.extend({
     },
     async submit(ev) {
       ev.preventDefault()
-      console.log(this.cell.type)
       switch (this.cell.type) {
         case CellTypes.HOUSE:
           await this.rentChange()
@@ -309,7 +308,6 @@ export default Vue.extend({
       this.isLoading = false
     },
     async toJail() {
-      console.log(this.suspectUid)
       if (this.isLoading || !this.suspectUid) return
       this.isLoading = true
       await this.goToJail(this.suspectUid)
