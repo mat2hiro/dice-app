@@ -162,7 +162,9 @@ export const getters: GetterTree<IState, IState> = {
         .reduce(
           (acc, c) =>
             acc +
-            (c.house < 0 ? c.price / 2 : c.price + c.buildPrice * c.house),
+            (c.house < 0
+              ? c.price / 2
+              : c.price + (c.buildPrice * c.house || 0)),
           0
         ) || 0
 }
