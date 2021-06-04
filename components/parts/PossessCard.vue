@@ -43,7 +43,8 @@ export default Vue.extend({
 }
 .own-icon {
   position: absolute;
-  border: 0.5px solid #ccc;
+  border-left: 0.5px solid #ccc;
+  border-right: 0.5px solid #ccc;
   left: 0;
   top: 0;
   bottom: 0;
