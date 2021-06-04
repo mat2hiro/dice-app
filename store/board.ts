@@ -188,7 +188,7 @@ export const getters: GetterTree<IState, IState> = {
     { cells }: { cells: ICell<Date>[] },
     { joinedUsers }: { joinedUsers: IUsers<Date> }
   ) => (uid: string) =>
-    joinedUsers[uid].cash +
+    joinedUsers[uid]?.cash +
       cells
         .filter((c) => c.owner === uid)
         .reduce(
