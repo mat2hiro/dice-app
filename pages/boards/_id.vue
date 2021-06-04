@@ -51,7 +51,6 @@
             @username-click="showAuthModal"
             @pay-click="showPayModal"
           />
-          <card-result :card="card" :is-your-time="isYourTime" />
           <nuxt-link to="/" class="btn btn-secondary">Leave</nuxt-link>
           <button
             v-if="isOwner(uid)"
@@ -110,7 +109,6 @@ import firebase from '~/plugins/firebase'
 import { uidColor } from '~/services'
 
 import DiceResult from '~/components/board/DiceResult.vue'
-import CardResult from '~/components/board/CardResult.vue'
 import History from '~/components/board/History.vue'
 import UserStatus from '~/components/board/UserStatus.vue'
 import BoardCells from '~/components/board/BoardCells.vue'
@@ -126,7 +124,6 @@ const boardsRef = firebase.firestore().collection('boards')
 export default Vue.extend({
   components: {
     DiceResult,
-    CardResult,
     History,
     UserStatus,
     SendMessageModal,
@@ -197,7 +194,8 @@ export default Vue.extend({
           throwUser: {
             uid,
             double: 0
-          }
+          },
+          drawIdx: {}
         })
       )
     }
@@ -234,8 +232,7 @@ export default Vue.extend({
       'users',
       'history',
       'messages',
-      'cells',
-      'card'
+      'cells'
     ]),
     ...mapState('auth', ['uid', 'username']),
     ...mapGetters('board', ['joinedUsers', 'isOwner', 'nextUser']),
@@ -303,7 +300,6 @@ export default Vue.extend({
       'reset',
       'throwDice',
       'skip',
-      'drawCard',
       'setBoard',
       'setBoardUser',
       'startListener',

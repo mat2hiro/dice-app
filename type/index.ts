@@ -36,19 +36,13 @@ export interface IThrowUser {
   uid: string
 }
 
-export interface ICard {
-  from: number
-  to: number
-  value: string
-}
-
 export interface IBoard<Dt> {
   boardName: string
-  card: ICard
   dice: IDice<Dt>
   isActive: boolean
   owner: string
   throwUser: IThrowUser
+  drawIdx: IDrawIdx
   timestamp: ITime<Dt>
 }
 
@@ -67,4 +61,24 @@ export interface ICell<Dt> {
   price?: number
   buildPrice?: number
   timestamp: ITime<Dt>
+}
+
+export interface ICard<Dt> {
+  owner: string
+  type: number
+  title: string
+  from?: string
+  to?: string
+  cash?: number
+  house?: number
+  hotel?: number
+  cell?: number
+  by?: number
+  infra?: number
+  timestamp: ITime<Dt>
+}
+
+export interface IDrawIdx {
+  communityChest?: number
+  chance?: number
 }
