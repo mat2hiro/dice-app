@@ -130,6 +130,24 @@
         </div>
       </form>
     </div>
+    <div v-else-if="cell.type === cellTypes.CARD">
+      <template v-if="cell.cardGroup === cardTypes.CHANCE">
+        <possess-card
+          v-for="(card, idx) in chance"
+          :key="card.title"
+          :card="card"
+          :is-recent="cardIsRecent('chance', idx)"
+        />
+      </template>
+      <template v-else>
+        <possess-card
+          v-for="(card, idx) in communityChest"
+          :key="card.title"
+          :card="card"
+          :is-recent="cardIsRecent('communityChest', idx)"
+        />
+      </template>
+    </div>
     <template
       v-if="isChangeOwner || cashToPay !== 0 || suspectUid"
       v-slot:modal-ok
@@ -147,20 +165,28 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { mapActions, mapGetters } from 'vuex'
-import { CellTypes, InfraTypes } from '../../static/ts/monopoly-cells'
+import { mapActions, mapGetters, mapState } from 'vuex'
+
+import PossessCard from '~/components/parts/PossessCard.vue'
+
+import { CellTypes, InfraTypes, CardTypes } from '~/static/ts/monopoly-cells'
 
 export default Vue.extend({
+  components: {
+    PossessCard
+  },
   props: ['users', 'cells', 'cellIdx', 'hasAuth'],
   data: () => ({
     house: 0,
     ownerId: '',
     suspectUid: '',
     isLoading: false,
-    cellTypes: CellTypes
+    cellTypes: CellTypes,
+    cardTypes: CardTypes
   }),
   computed: {
     ...mapGetters('auth', ['uid']),
+    ...mapState('board', ['communityChest', 'chance', 'drawIdx']),
     cell() {
       return (this.cells ? this.cells[this.cellIdx] : {}) || {}
     },
@@ -190,7 +216,9 @@ export default Vue.extend({
     sameColorCell() {
       return this.cells
         ? this.cells.filter(
-            (c) => c.type === CellTypes.HOUSE && c.colorGroup === this.cell.colorGroup
+            (c) =>
+              c.type === CellTypes.HOUSE &&
+              c.colorGroup === this.cell.colorGroup
           )
         : []
     },
@@ -240,7 +268,12 @@ export default Vue.extend({
     },
     uidsInJail() {
       const users = this.$props.users || {}
-      return Object.keys(users).filter(i => users[i]?.jail > 0)
+      return Object.keys(users).filter((i) => users[i]?.jail > 0)
+    },
+    cardIsRecent() {
+      return (cardName, idx) => {
+        return this.drawIdx?.[cardName] === idx
+      }
     }
   },
   mounted() {

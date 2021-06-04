@@ -38,6 +38,7 @@ import { mapState } from 'vuex'
 import firebase from '~/plugins/firebase'
 
 import { boardCellsData } from '~/static/ts/monopoly-cells.ts'
+import { communityChestData, chanceData } from '~/static/ts/monopoly-cards.ts'
 
 const db = firebase.firestore()
 
@@ -83,8 +84,8 @@ export default Vue.extend({
           boardName: this.newId,
           owner: this.uid
         })
-        await Promise.all(
-          boardCellsData.map((cell, idx) =>
+        await Promise.all([
+          ...boardCellsData.map((cell, idx) =>
             db
               .collection('boards')
               .doc(addedRef.id)
@@ -96,8 +97,32 @@ export default Vue.extend({
                 house: 0,
                 timestamp: { updated: now }
               })
+          ),
+          ...communityChestData.map((card, idx) =>
+            db
+              .collection('boards')
+              .doc(addedRef.id)
+              .collection('communityChests')
+              .doc('' + idx)
+              .set({
+                ...card,
+                owner: '',
+                timestamp: { updated: now }
+              })
+          ),
+          ...chanceData.map((card, idx) =>
+            db
+              .collection('boards')
+              .doc(addedRef.id)
+              .collection('chances')
+              .doc('' + idx)
+              .set({
+                ...card,
+                owner: '',
+                timestamp: { updated: now }
+              })
           )
-        )
+        ])
         this.$router.push(`/boards/${addedRef.id}`)
       } catch (e) {
         console.error(e)

@@ -1,5 +1,10 @@
 export enum CellPositions {
-  JAIL = 10
+  GO = 0,
+  READING = 5,
+  JAIL = 10,
+  CHARLES = 11,
+  ILLINOIS = 24,
+  BOARDWALK = 39
 }
 
 export enum CellTypes {

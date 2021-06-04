@@ -3,13 +3,14 @@ import { GetterTree, ActionTree, MutationTree } from 'vuex'
 import {
   IUser,
   IDice,
-  ICard,
   IThrowUser,
   IMessage,
   FDate,
   ITime,
   IBoard,
-  ICell
+  ICell,
+  ICard,
+  IDrawIdx
 } from '../type'
 import { CellPositions } from '../static/ts/monopoly-cells'
 import firebase from '~/plugins/firebase'
@@ -27,12 +28,14 @@ interface State<Dt> {
   owner: string
   users: IUsers<Dt>
   dice: IDice<Dt>
-  card: ICard
   throwUser: IThrowUser
   unsubscribe: Function[]
   history: IDice<Dt>[]
   messages: IMessage<Dt>[]
   cells: ICell<Dt>[]
+  communityChest: ICard<Dt>[]
+  chance: ICard<Dt>[]
+  drawIdx: IDrawIdx
 }
 
 interface IState extends State<Date> {}
@@ -48,12 +51,14 @@ export const state = (): IState => ({
     uid: '',
     time: new Date()
   },
-  card: { from: 0, to: 16, value: '0' },
   throwUser: { uid: '', double: 0 },
   unsubscribe: [] as Function[],
   history: [] as IDice<Date>[],
   messages: [] as IMessage<Date>[],
-  cells: [] as ICell<Date>[]
+  cells: [] as ICell<Date>[],
+  communityChest: [],
+  chance: [],
+  drawIdx: {}
 })
 
 // export type BoardModuleState = ReturnType<typeof state>
@@ -73,11 +78,13 @@ export const mutations: MutationTree<IState> = {
       uid: '',
       time: new Date()
     }
-    state.card = { from: 0, to: 16, value: '0' }
     state.throwUser = { uid: '', double: 0 }
     state.history = []
     state.messages = []
     state.cells = []
+    state.communityChest = []
+    state.chance = []
+    state.drawIdx = {}
   },
   set(state, setState: FState) {
     state.id = setState.id || state.id
@@ -86,8 +93,8 @@ export const mutations: MutationTree<IState> = {
     state.dice =
       (setState.dice && { ...setState.dice, time: new Date() }) || state.dice
     if (setState.dice.time) state.dice.time = setState.dice.time.toDate()
-    state.card = setState.card || state.card
     state.throwUser = setState.throwUser || state.throwUser
+    state.drawIdx = setState.drawIdx || state.drawIdx
   },
   setU(state, { uid, user }: { uid: string; user: IUser<FDate> }) {
     const timestamp: ITime<FDate> = user.timestamp || {}
@@ -111,6 +118,20 @@ export const mutations: MutationTree<IState> = {
     const ts: ITime<Date> = {}
     if (timestamp.updated) ts.updated = timestamp.updated.toDate()
     Vue.set(state.cells, idx, { ...cell, timestamp: ts } as ICell<Date>)
+  },
+  setO(state, { card, idx }: { card: ICard<FDate>; idx: number }) {
+    const timestamp: ITime<FDate> = card.timestamp || {}
+    const ts: ITime<Date> = {}
+    if (timestamp.updated) ts.updated = timestamp.updated.toDate()
+    Vue.set(state.communityChest, idx, { ...card, timestamp: ts } as ICard<
+      Date
+    >)
+  },
+  setH(state, { card, idx }: { card: ICard<FDate>; idx: number }) {
+    const timestamp: ITime<FDate> = card.timestamp || {}
+    const ts: ITime<Date> = {}
+    if (timestamp.updated) ts.updated = timestamp.updated.toDate()
+    Vue.set(state.chance, idx, { ...card, timestamp: ts } as ICard<Date>)
   },
   pushHistory(state, dice: IDice<FDate>) {
     if (dice.time.toMillis() === state.dice.time.getTime()) return
@@ -152,6 +173,17 @@ export const getters: GetterTree<IState, IState> = {
         : pre
     }, '')
   },
+  totalHouses: ({ cells }: { cells: ICell<Date>[] }) => (uid: string) =>
+    cells
+      .filter((c) => c.owner === uid)
+      .reduce(
+        (acc, c) => {
+          if (c.house === 5) acc.hotel += 1
+          else if (c.house > 0) acc.house += c.house
+          return acc
+        },
+        { house: 0, hotel: 0 }
+      ),
   totalAsset: (
     { cells }: { cells: ICell<Date>[] },
     { joinedUsers }: { joinedUsers: IUsers<Date> }
@@ -181,9 +213,11 @@ export const actions: ActionTree<IState, IState> = {
   },
   reset: async ({ state, getters }, uid) => {
     const boardRef = boardsRef.doc(state.id)
-    const [cells, users] = await Promise.all([
+    const [cells, users, communityChests, chances] = await Promise.all([
       boardRef.collection('cells').get(),
-      boardRef.collection('users').get()
+      boardRef.collection('users').get(),
+      boardRef.collection('communityChests').get(),
+      boardRef.collection('chances').get()
     ])
     const batch = firebase.firestore().batch()
     const now = new Date()
@@ -201,6 +235,12 @@ export const actions: ActionTree<IState, IState> = {
         position: 0
       })
     })
+    communityChests.docs.forEach((doc) => {
+      batch.update(doc.ref, { owner: '' })
+    })
+    chances.docs.forEach((doc) => {
+      batch.update(doc.ref, { owner: '' })
+    })
     await Promise.all([
       boardRef.update({
         dice: {
@@ -209,6 +249,7 @@ export const actions: ActionTree<IState, IState> = {
           time: new Date()
         },
         throwUser: { uid, double: 0 },
+        drawIdx: {},
         'timestamp.updated': now
       }),
       batch.commit()
@@ -254,6 +295,7 @@ export const actions: ActionTree<IState, IState> = {
       }),
       dispatch('sendMessage', {
         from: uid,
+        to: uid,
         message: `Go to jail.`
       })
     ])
@@ -397,20 +439,104 @@ export const actions: ActionTree<IState, IState> = {
         .update({ 'timestamp.updated': new Date() })
     ])
   },
-  drawCard: async ({ state }, minMax: string[]) => {
-    const value = (
-      Math.random() * (+minMax[1] - +minMax[0]) +
-      +minMax[0]
-    ).toFixed(2)
-    await Promise.all([
+  drawCommunityChest: async (
+    { state, getters, dispatch },
+    { uid }: { uid: string }
+  ) => {
+    const user = state.users[uid]
+    const unDrawnCardIdxs: number[] = state.communityChest.reduce(
+      (acc, c, idx) => {
+        if (c.owner === '') acc.push(idx)
+        return acc
+      },
+      []
+    )
+    const isFullOwned = unDrawnCardIdxs.length === 0
+    if (isFullOwned) unDrawnCardIdxs.push(...state.communityChest.keys())
+    const drawCardIdx =
+      unDrawnCardIdxs[Math.floor(Math.random() * unDrawnCardIdxs.length)]
+
+    const promises = [
       boardsRef.doc(state.id).update({
-        card: {
-          from: +minMax[0],
-          to: +minMax[1],
-          value
-        }
+        'drawIdx.communityChest': drawCardIdx
+      }),
+      dispatch('sendMessage', {
+        from: uid,
+        to: uid,
+        message: `Draw community chest: "${state.communityChest[drawCardIdx].title}"`
       })
-    ])
+    ]
+    if (isFullOwned) {
+      promises.push(
+        ...unDrawnCardIdxs.map((idx) =>
+          boardsRef
+            .doc(state.id)
+            .collection('communityChests')
+            .doc('' + idx)
+            .update({ owner: idx === drawCardIdx ? uid : '' })
+        )
+      )
+    } else {
+      promises.push(
+        boardsRef
+          .doc(state.id)
+          .collection('communityChests')
+          .doc('' + drawCardIdx)
+          .update({
+            owner: uid
+          })
+      )
+    }
+    await Promise.all(promises)
+    return drawCardIdx
+  },
+  drawChance: async (
+    { state, getters, dispatch },
+    { uid }: { uid: string }
+  ) => {
+    const user = state.users[uid]
+    const unDrawnCardIdxs: number[] = state.chance.reduce((acc, c, idx) => {
+      if (c.owner === '') acc.push(idx)
+      return acc
+    }, [])
+    const isFullOwned = unDrawnCardIdxs.length === 0
+    if (isFullOwned) unDrawnCardIdxs.push(...state.chance.keys())
+    const drawCardIdx =
+      unDrawnCardIdxs[Math.floor(Math.random() * unDrawnCardIdxs.length)]
+
+    const promises = [
+      boardsRef.doc(state.id).update({
+        'drawIdx.chance': drawCardIdx
+      }),
+      dispatch('sendMessage', {
+        from: uid,
+        to: uid,
+        message: `Draw chance: "${state.chance[drawCardIdx].title}"`
+      })
+    ]
+    if (isFullOwned) {
+      promises.push(
+        ...unDrawnCardIdxs.map((idx) =>
+          boardsRef
+            .doc(state.id)
+            .collection('chances')
+            .doc('' + idx)
+            .update({ owner: idx === drawCardIdx ? uid : '' })
+        )
+      )
+    } else {
+      promises.push(
+        boardsRef
+          .doc(state.id)
+          .collection('chances')
+          .doc('' + drawCardIdx)
+          .update({
+            owner: uid
+          })
+      )
+    }
+    await Promise.all(promises)
+    return drawCardIdx
   },
   sendMessage: async ({ state }, message: IMessage<Date>) => {
     const now = new Date()
@@ -494,8 +620,8 @@ export const actions: ActionTree<IState, IState> = {
         boardName: data.boardName,
         owner: data.owner,
         dice: data.dice,
-        card: data.card,
-        throwUser: data.throwUser
+        throwUser: data.throwUser,
+        drawIdx: data.drawIdx
       })
     })
     const unsubscribeUser = boardsRef
@@ -541,11 +667,33 @@ export const actions: ActionTree<IState, IState> = {
         })
       })
 
+    const unsubscribeCC = boardsRef
+      .doc(state.id)
+      .collection('communityChests')
+      .onSnapshot((snap) => {
+        snap.docChanges().forEach((change) => {
+          const card: Partial<ICard<FDate>> = change.doc.data()
+          commit('setO', { card, idx: change.doc.id })
+        })
+      })
+
+    const unsubscribeChance = boardsRef
+      .doc(state.id)
+      .collection('chances')
+      .onSnapshot((snap) => {
+        snap.docChanges().forEach((change) => {
+          const card: Partial<ICard<FDate>> = change.doc.data()
+          commit('setH', { card, idx: change.doc.id })
+        })
+      })
+
     commit('unsubscribe', [
       unsubscribeThis,
       unsubscribeUser,
       unsubscribeMessage,
-      unsubscribeCell
+      unsubscribeCell,
+      unsubscribeCC,
+      unsubscribeChance
     ])
   },
   stopListener({ commit }) {

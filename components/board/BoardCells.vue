@@ -63,6 +63,13 @@
                 ${{ cell.price || 0 }}
               </button>
               <button
+                v-else-if="cell.type === cellTypes.CARD"
+                class="btn btn-warning"
+                @click.prevent.once="drawCard(uid, cell)"
+              >
+                draw
+              </button>
+              <button
                 v-else-if="cell.type === cellTypes.JAIL && inJail"
                 class="btn btn-warning"
                 @click.stop.prevent.once="releaseFromJail(uid)"
@@ -90,7 +97,12 @@ import { mapActions, mapGetters } from 'vuex'
 
 import UserButton from '~/components/parts/UserButton.vue'
 import { bgColorStyle } from '~/services'
-import { cellColorsData, CellTypes, InfraTypes } from '~/static/ts/monopoly-cells.ts'
+import {
+  cellColorsData,
+  CellTypes,
+  InfraTypes,
+  CardTypes
+} from '~/static/ts/monopoly-cells.ts'
 
 export default Vue.extend({
   components: {
@@ -180,7 +192,8 @@ export default Vue.extend({
       return (cell) =>
         this.cells
           ? this.cells.filter(
-              (c) => c.type === CellTypes.HOUSE && c.colorGroup === cell.colorGroup
+              (c) =>
+                c.type === CellTypes.HOUSE && c.colorGroup === cell.colorGroup
             )
           : []
     },
@@ -199,7 +212,9 @@ export default Vue.extend({
       'sendMessage',
       'setCell',
       'goToJail',
-      'releaseFromJail'
+      'releaseFromJail',
+      'drawCommunityChest',
+      'drawChance'
     ]),
     async payForRent(uid, cell) {
       await this.sendMessage({
@@ -215,6 +230,13 @@ export default Vue.extend({
         cash: cell.price || 0,
         message: `Pay for ${cell.name}.`
       })
+    },
+    async drawCard(uid, cell) {
+      if (cell.cardGroup === CardTypes.CHANCE) {
+        await this.drawChance({ uid })
+      } else {
+        await this.drawCommunityChest({ uid })
+      }
     },
     async buyCell(uid, cellIdx) {
       const cell = this.cells[cellIdx] || {}
